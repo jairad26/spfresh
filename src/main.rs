@@ -89,22 +89,19 @@ fn main() {
     let query = read_fvecs_as_array("data/sift_small/siftsmall_query.fvecs");
     let config: Config =
         Config::from_file("examples/config.yaml").expect("Failed to load configuration");
+    config.setup_logging();
 
-
-    //let data = read_fvecs_as_array("data/sift/sift_base.fvecs");
     let spann_index = SpannIndexBuilder::<f32>::new(config)
         .with_data(data.view())
         .build::<128>()
         .expect("Failed to build SPANN index");
     /*
-
     let spann_index = SpannIndexBuilder::<f32>::new(config)
         .load::<128>()
         .expect("Failed to build SPANN index");
     */
     let groundtruth = read_groundtruth("data/sift_small/siftsmall_groundtruth.ivecs");
     let k = get_groundtruth_k(&groundtruth);
-    info!("Searching for {} nearest neighbors...", k);
     // Benchmark nearest neighbor search
     for (i, query_vector) in query.rows().into_iter().enumerate() {
         let result = spann_index

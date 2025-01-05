@@ -82,7 +82,6 @@ where
         let mut clustering: HierarchicalClustering<N, F> =
             HierarchicalClustering::new(clustering_params, data);
         clustering.fit()?;
-        info!("Hierarchical clustering completed");
         //visualization::print_cluster_analysis(&clustering.clusters, &data.to_owned());
 
         let mut spann_index = SpannIndex::<N, F>::new();
@@ -105,7 +104,6 @@ where
         } else {
             return Err("Output path is not specified".into());
         }
-        info!("Loaded SpannIndex from disk");
         Ok(spann_index)
     }
 }

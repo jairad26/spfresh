@@ -1,7 +1,8 @@
 use ndarray::Array2;
 use num_traits::Float;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs, io};
+use std::{fs, io};
+use fxhash::FxHashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct PointData<F: Float> {
@@ -27,7 +28,7 @@ pub trait PostingListStore<F: Float>: Sized {
 
 #[derive(Serialize, Deserialize)]
 pub struct InMemoryPostingListStore<F: Float> {
-    data: HashMap<usize, Vec<PointData<F>>>,
+    data: FxHashMap<usize, Vec<PointData<F>>>,
 }
 
 impl<F: Float> Default for InMemoryPostingListStore<F> {
@@ -40,7 +41,7 @@ impl<F: Float> InMemoryPostingListStore<F> {
     /// Create a new, empty in-memory store.
     pub fn new() -> Self {
         Self {
-            data: HashMap::new(),
+            data: FxHashMap::default(),
         }
     }
 }

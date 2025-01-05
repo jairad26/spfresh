@@ -1,5 +1,5 @@
 use crate::clustering::{Cluster, ClusteringParams, InitializationMethod};
-use log::{debug, error, info};
+use log::{debug, error};
 use ndarray::{Array1, ArrayView2, Axis};
 use num_traits::{Float, FromPrimitive, Signed};
 use rand::rngs::SmallRng;
@@ -55,7 +55,6 @@ where
     }
 
     pub fn fit(&mut self) -> Result<(), Box<dyn Error>> {
-        info!("Starting clustering, please wait...");
         self.initialize_clusters(self.params.initial_k);
         self.assign_points();
         self.update_centroids();
@@ -187,9 +186,7 @@ where
         let mut rng = self.get_rng();
 
         let centroid_indices: Vec<usize> = (0..n_points)
-            .choose_multiple(&mut rng, k)
-            .into_iter()
-            .collect();
+            .choose_multiple(&mut rng, k);
 
         self.clusters = centroid_indices
             .into_iter()
