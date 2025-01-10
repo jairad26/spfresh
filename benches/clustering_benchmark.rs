@@ -1,10 +1,10 @@
+use adriann::clustering::{Config, SpannIndexBuilder};
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use ndarray::Array2;
 use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
 use rand::SeedableRng;
 use rand_distr::StandardNormal;
-use adriann::clustering::{ Config, SpannIndexBuilder};
 
 /// Generate random data matrix of specified size
 fn generate_random_data(rows: usize, cols: usize, seed: u64) -> Array2<f32> {
@@ -29,10 +29,10 @@ fn bench_index_build(c: &mut Criterion) {
 
     // Test different dataset sizes
     let sizes = vec![
-        (1_000, 128),    // Small dataset
-        (10_000, 128),   // Medium dataset
-        (100_000, 128),  // Large dataset
-        (1_000_000, 128),// Very Large dataset
+        (1_000, 128),     // Small dataset
+        (10_000, 128),    // Medium dataset
+        (100_000, 128),   // Large dataset
+        (1_000_000, 128), // Very Large dataset
     ];
 
     for (num_points, dims) in sizes {
@@ -55,9 +55,9 @@ fn bench_search(c: &mut Criterion) {
 
     // Test different dataset sizes
     let sizes = vec![
-        (1_000, 128, 10),     // Small dataset, k=10
-        (10_000, 128, 10),    // Medium dataset, k=10
-        (100_000, 128, 10),   // Large dataset, k=10
+        (1_000, 128, 10),   // Small dataset, k=10
+        (10_000, 128, 10),  // Medium dataset, k=10
+        (100_000, 128, 10), // Large dataset, k=10
     ];
 
     for (num_points, dims, k) in sizes {
@@ -74,8 +74,11 @@ fn bench_search(c: &mut Criterion) {
 
                 b.iter(|| {
                     for query in query_points.rows() {
-                        black_box(index.find_k_nearest_neighbor_spann(&query, k)
-                            .expect("Search failed"));
+                        black_box(
+                            index
+                                .find_k_nearest_neighbor_spann(&query, k)
+                                .expect("Search failed"),
+                        );
                     }
                 });
             },
@@ -84,9 +87,5 @@ fn bench_search(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(
-    benches,
-    bench_index_build,
-    bench_search
-);
+criterion_group!(benches, bench_index_build, bench_search);
 criterion_main!(benches);
