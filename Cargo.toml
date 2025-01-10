@@ -28,6 +28,7 @@ kiddo = { version = "5.0.3", features = ["serde"] }
 rand_distr = "0.4.3"
 ndarray-stats = "0.6"
 fxhash = "0.2.1"
+rayon = "1.10.0"
 
 [dev-dependencies]
 criterion = {version = "0.5", features = ["html_reports"]}

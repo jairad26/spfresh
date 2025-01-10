@@ -4,7 +4,7 @@ use std::fmt::Debug;
 use crate::clustering::float::AdriannFloat;
 
 /// Trait defining the interface for distance metrics
-pub trait DistanceMetric<F: AdriannFloat>: {
+pub trait DistanceMetric<F: AdriannFloat>: Send + Sync {
     /// Computes the distance between two points. Panics if the points have different dimensions.
     fn compute(&self, point1: &ArrayView1<F>, point2: &ArrayView1<F>) -> F;
 }

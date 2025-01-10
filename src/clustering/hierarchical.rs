@@ -7,6 +7,7 @@ use rand::seq::{IteratorRandom, SliceRandom};
 use rand::SeedableRng;
 use std::error::Error;
 use std::sync::Arc;
+use rayon::prelude::*;
 
 fn compute_mean<F>(data: &ArrayView2<F>, indices: &[usize]) -> Array1<F>
 where
@@ -113,41 +114,47 @@ where
 
     // with SPANN we need to update the centroids
     fn update_centroids(&mut self) {
-        let mut distances = Vec::with_capacity(self.data.nrows());
+        let distance_metric = &self.params.distance_metric;
 
-        for c in &mut self.clusters {
-            if c.points.is_empty() {
-                continue;
-            }
+        // We’ll collect new centroids in a separate vector
+        let new_centroids: Vec<Option<usize>> = self
+            .clusters
+            .par_iter()
+            .map(|cluster| {
+                if cluster.points.is_empty() {
+                    // If no points, centroid_idx remains the same
+                    return cluster.centroid_idx;
+                }
 
-            let mean = compute_mean(&self.data, &c.points);
-            distances.clear();
+                // Compute the mean for cluster's points
+                let mean = compute_mean(&self.data, &cluster.points);
 
-            // Pre-allocate and reuse distance vector
-            for &pt in &c.points {
-                let d = self
-                    .params
-                    .distance_metric
-                    .compute(&self.data.row(pt), &mean.view());
-                distances.push((pt, d));
-            }
-
-            // Find minimum without sorting
-            c.centroid_idx = Some(
-                distances
-                    .iter()
-                    .fold(
-                        (c.points[0], <F as num_traits::Float>::max_value()),
-                        |(min_idx, min_dist), &(idx, dist)| {
+                // Find the row that is closest to this mean
+                let (best_idx, _best_dist) = cluster
+                    .points
+                    .par_iter()
+                    .map(|&pt| {
+                        let d = distance_metric.compute(&self.data.row(pt), &mean.view());
+                        (pt, d)
+                    })
+                    .reduce(
+                        || (0,  <F as num_traits::Float>::max_value()),
+                        |(min_idx, min_dist), (pt, dist)| {
                             if dist < min_dist {
-                                (idx, dist)
+                                (pt, dist)
                             } else {
                                 (min_idx, min_dist)
                             }
                         },
-                    )
-                    .0,
-            );
+                    );
+
+                Some(best_idx)
+            })
+            .collect();
+
+        // Now update the clusters on a single thread
+        for (cluster, new_idx) in self.clusters.iter_mut().zip(new_centroids) {
+            cluster.centroid_idx = new_idx;
         }
     }
 
@@ -229,11 +236,12 @@ where
         // Select the remaining k-1 centroids
         for _ in 1..k {
             let distances: Vec<F> = (0..n_points)
+                .into_par_iter()
                 .map(|i| {
                     let point = self.data.row(i);
                     // Distance to the *closest* existing centroid
                     self.clusters
-                        .iter()
+                        .par_iter()
                         .map(|cluster| {
                             self.params.distance_metric.compute(
                                 &point,
@@ -247,7 +255,7 @@ where
 
             let sum = distances.iter().fold(F::zero(), |acc, &x| acc + x);
             let weights: Vec<F> = distances
-                .iter()
+                .par_iter()
                 .map(|&d| (d * d) / num_traits::Float::max(sum, F::from(1e-10).unwrap()))
                 .collect();
             let indices: Vec<_> = (0..n_points).collect();
@@ -270,7 +278,7 @@ where
         let num_centroids = centroids.len();
 
         let assignments = point_indices
-            .iter()
+            .par_iter()
             .map(|&point_idx| {
                 let point = self.data.row(point_idx);
                 let mut distances = Vec::with_capacity(num_centroids);
