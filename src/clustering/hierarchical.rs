@@ -1,21 +1,16 @@
 use crate::clustering::{Cluster, ClusteringParams, InitializationMethod};
+use crate::clustering::float::AdriannFloat;
 use log::{debug, error};
 use ndarray::{Array1, ArrayView2, Axis};
-use num_traits::{Float, FromPrimitive, Signed};
 use rand::rngs::SmallRng;
 use rand::seq::{IteratorRandom, SliceRandom};
 use rand::SeedableRng;
-use rand_distr::uniform::SampleUniform;
 use std::error::Error;
-use std::fmt::Debug;
-use std::ops::AddAssign;
-
 use std::sync::Arc;
 
 fn compute_mean<F>(data: &ArrayView2<F>, indices: &[usize]) -> Array1<F>
 where
-    F: Float + std::ops::Add<Output = F>,
-    F: FromPrimitive,
+    F: AdriannFloat + std::ops::Add<Output = F>
 {
     if indices.is_empty() {
         return Array1::<F>::zeros(data.ncols());
@@ -24,23 +19,15 @@ where
     selected_data.mean_axis(Axis(0)).unwrap()
 }
 
-pub struct HierarchicalClustering<'a, const N: usize, F: Float> {
+pub struct HierarchicalClustering<'a, const N: usize, F: AdriannFloat> {
     pub clusters: Vec<Cluster>,
     pub data: Arc<ArrayView2<'a, F>>,
     pub params: ClusteringParams<F>,
 }
 
-impl<'a, const N: usize, F: Float + Debug> HierarchicalClustering<'a, N, F>
+impl<'a, const N: usize, F: AdriannFloat> HierarchicalClustering<'a, N, F>
 where
-    F: Float
-        + AddAssign
-        + std::iter::Sum
-        + SampleUniform
-        + FromPrimitive
-        + Signed
-        + ndarray::ScalarOperand
-        + Sync
-        + Clone,
+    F: AdriannFloat
 {
     /// A constant factor for deciding whether a point is a "boundary" point
     /// (i.e., it’s also close enough to other clusters).
@@ -150,7 +137,7 @@ where
                 distances
                     .iter()
                     .fold(
-                        (c.points[0], F::max_value()),
+                        (c.points[0], <F as num_traits::Float>::max_value()),
                         |(min_idx, min_dist), &(idx, dist)| {
                             if dist < min_dist {
                                 (idx, dist)
@@ -185,8 +172,7 @@ where
         let n_points = self.data.nrows();
         let mut rng = self.get_rng();
 
-        let centroid_indices: Vec<usize> = (0..n_points)
-            .choose_multiple(&mut rng, k);
+        let centroid_indices: Vec<usize> = (0..n_points).choose_multiple(&mut rng, k);
 
         self.clusters = centroid_indices
             .into_iter()
@@ -262,7 +248,7 @@ where
             let sum = distances.iter().fold(F::zero(), |acc, &x| acc + x);
             let weights: Vec<F> = distances
                 .iter()
-                .map(|&d| (d * d) / sum.max(F::from(1e-10).unwrap()))
+                .map(|&d| (d * d) / num_traits::Float::max(sum, F::from(1e-10).unwrap()))
                 .collect();
             let indices: Vec<_> = (0..n_points).collect();
             // Weighted selection
@@ -299,7 +285,7 @@ where
                 }
 
                 let (best_cluster, min_distance) = distances.iter().fold(
-                    (0, F::max_value()),
+                    (0, <F as num_traits::Float>::max_value()),
                     |(min_idx, min_dist), &(idx, dist)| {
                         if dist < min_dist {
                             (idx, dist)

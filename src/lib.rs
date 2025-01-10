@@ -5,7 +5,6 @@
 /// # Modules
 /// - `clustering`: Contains the hierarchical clustering implementation.
 /// - `visualization`: Provides tools for visualizing the clustering results.
-
 pub mod clustering;
 pub mod visualization;
 

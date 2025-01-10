@@ -1,10 +1,9 @@
 use super::distance::{ChebyshevDistance, ManhattanDistance, SquaredEuclideanDistance};
+use crate::clustering::float::AdriannFloat;
 use crate::clustering::{ClusteringParams, InitializationMethod};
 use log::LevelFilter;
 use ndarray::Array2;
-use num_traits::{Float, Signed};
 use serde::Deserialize;
-use std::ops::AddAssign;
 use std::{fmt, sync::Arc};
 
 #[derive(Debug, Deserialize)]
@@ -108,7 +107,7 @@ impl Config {
     }
 
     /// Converts `ClusteringParamsConfig` into `ClusteringParams`.
-    pub fn to_clustering_params<F: Float + Signed + AddAssign>(&self) -> ClusteringParams<F> {
+    pub fn to_clustering_params<F: AdriannFloat>(&self) -> ClusteringParams<F> {
         ClusteringParams {
             distance_metric: match self.clustering_params.distance_metric.as_str() {
                 "Euclidean" => Arc::new(SquaredEuclideanDistance),

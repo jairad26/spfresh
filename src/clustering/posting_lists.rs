@@ -1,16 +1,15 @@
+use fxhash::FxHashMap;
 use ndarray::Array2;
-use num_traits::Float;
 use serde::{Deserialize, Serialize};
 use std::{fs, io};
-use fxhash::FxHashMap;
 
 #[derive(Serialize, Deserialize)]
-pub struct PointData<F: Float> {
+pub struct PointData<F> {
     pub point_id: usize,
     pub vector: Vec<F>,
 }
 
-pub trait PostingListStore<F: Float>: Sized {
+pub trait PostingListStore<F>: Sized {
     /// Insert or update the posting list for a given `cluster_id`.
     fn insert_posting_list(&mut self, cluster_id: usize, vectors: Array2<F>, point_ids: Vec<usize>);
 
@@ -27,17 +26,17 @@ pub trait PostingListStore<F: Float>: Sized {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct InMemoryPostingListStore<F: Float> {
+pub struct InMemoryPostingListStore<F> {
     data: FxHashMap<usize, Vec<PointData<F>>>,
 }
 
-impl<F: Float> Default for InMemoryPostingListStore<F> {
+impl<F> Default for InMemoryPostingListStore<F> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<F: Float> InMemoryPostingListStore<F> {
+impl<F> InMemoryPostingListStore<F> {
     /// Create a new, empty in-memory store.
     pub fn new() -> Self {
         Self {
@@ -46,7 +45,7 @@ impl<F: Float> InMemoryPostingListStore<F> {
     }
 }
 
-impl<F: Float + for<'de> Deserialize<'de> + Serialize> PostingListStore<F>
+impl<F: Serialize + for<'de> Deserialize<'de> + Clone> PostingListStore<F>
     for InMemoryPostingListStore<F>
 {
     fn insert_posting_list(
@@ -91,3 +90,6 @@ impl<F: Float + for<'de> Deserialize<'de> + Serialize> PostingListStore<F>
         Ok(store)
     }
 }
+
+pub type InMemoryPostingListStoreF32 = InMemoryPostingListStore<f32>;
+pub type InMemoryPostingListStoreF64 = InMemoryPostingListStore<f64>;

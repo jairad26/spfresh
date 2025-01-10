@@ -1,13 +1,12 @@
 use crate::clustering::{distance::SquaredEuclideanDistance, Cluster, DistanceMetric};
 use colored::Colorize;
 use ndarray::Array2;
-use num_traits::{Float, Signed};
 use std::fmt;
-use std::ops::AddAssign;
+use crate::clustering::float::AdriannFloat;
 
 pub fn print_cluster_analysis<F>(clusters: &[Cluster], data: &Array2<F>)
 where
-    F: Float + AddAssign + Signed,
+    F: AdriannFloat
 {
     println!("\n{}", "=== Cluster Analysis ===".bold());
 
@@ -19,7 +18,7 @@ where
 
 fn calculate_cluster_stats<F>(clusters: &[Cluster], data: &Array2<F>) -> Vec<ClusterStats>
 where
-    F: Float + AddAssign + Signed,
+    F: AdriannFloat
 {
     clusters
         .iter()
@@ -39,7 +38,7 @@ where
 
 fn calculate_distance_stats<F>(cluster: &Cluster, data: &Array2<F>) -> (f64, f64)
 where
-    F: Float + AddAssign + Signed,
+    F: AdriannFloat,
 {
     if cluster.points.is_empty() {
         return (0.0, 0.0);

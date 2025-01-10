@@ -1,83 +1,30 @@
 use std::io;
-use std::iter::Sum;
 
+use crate::clustering::float::AdriannFloat;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use kiddo::KdTree;
 use log::error;
-use num_traits::float::FloatCore;
-use num_traits::{Float, FromPrimitive, Signed};
-use rand_distr::uniform::SampleUniform;
-use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
 use std::fs::File;
-use std::ops::AddAssign;
 
-use ndarray::{Array2, ArrayView1, ArrayView2};
 use crate::clustering::distance::{DistanceMetric, SquaredEuclideanDistance};
 use crate::clustering::posting_lists::{InMemoryPostingListStore, PostingListStore};
 use crate::clustering::Cluster;
+use ndarray::{Array2, ArrayView1, ArrayView2};
 
-pub struct SpannIndex<const N: usize, F: Float>
-where
-    F: Float
-        + Debug
-        + Default
-        + Sum
-        + AddAssign
-        + SampleUniform
-        + Serialize
-        + FloatCore
-        + Sync
-        + Signed
-        + Send
-        + for<'de> Deserialize<'de>
-        + FromPrimitive,
-{
+pub struct SpannIndex<const N: usize, F: AdriannFloat> {
     pub kdtree: Option<KdTree<F, N>>,
     pub posting_list_store: Option<InMemoryPostingListStore<F>>,
 }
 
-impl<const N: usize, F: Float> Default for SpannIndex<N, F>
-where
-    F: Float
-        + Sum
-        + SampleUniform
-        + Serialize
-        + FloatCore
-        + Default
-        + Debug
-        + Sync
-        + Send
-        + AddAssign
-        + Signed
-        + for<'de> Deserialize<'de>
-        + ndarray::ScalarOperand
-        + FromPrimitive,
-{
+impl<const N: usize, F: AdriannFloat> Default for SpannIndex<N, F> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<const N: usize, F: Float> SpannIndex<N, F>
-where
-    F: Float
-        + Debug
-        + Default
-        + AddAssign
-        + Sum
-        + SampleUniform
-        + Serialize
-        + for<'de> Deserialize<'de>
-        + FromPrimitive
-        + FloatCore
-        + Copy
-        + Sync
-        + Signed
-        + Send,
-{
+impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
     pub fn new() -> Self {
         Self {
             kdtree: None,

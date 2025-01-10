@@ -1,52 +1,22 @@
+use super::spann_index::SpannIndex;
 use crate::clustering::config::Config;
+use crate::clustering::float::AdriannFloat;
 use crate::clustering::hierarchical::HierarchicalClustering;
 use crate::clustering::DistanceMetric;
-use log::info;
-//use crate::visualization;
 use ndarray::ArrayView2;
-use num_traits::float::FloatCore;
-use num_traits::{Float, FromPrimitive, Signed};
-use rand_distr::uniform::SampleUniform;
-use serde::{Deserialize, Serialize};
-use std::ops::AddAssign;
-use std::{fmt::Debug, sync::Arc};
+use std::sync::Arc;
 
-use super::spann_index::SpannIndex;
-
-#[derive(Debug, Clone, Copy)]
 pub enum InitializationMethod {
     Random,
     KMeansPlusPlus,
 }
 
-pub struct SpannIndexBuilder<'a, F: Float> {
+pub struct SpannIndexBuilder<'a, F: AdriannFloat> {
     config: Config,
     data: Option<ArrayView2<'a, F>>,
 }
 
-impl<'a, F: Float> SpannIndexBuilder<'a, F>
-where
-    F: Float
-        + Debug
-        + Default
-        + AddAssign
-        + AddAssign<&'a F>
-        + std::iter::Sum
-        + std::iter::Sum<&'a F>
-        + ndarray::ScalarOperand
-        + SampleUniform
-        + Serialize
-        + for<'de> Deserialize<'de>
-        + FloatCore
-        + Default
-        + Signed
-        + Debug
-        + Copy
-        + Sync
-        + Send
-        + std::ops::AddAssign
-        + FromPrimitive,
-{
+impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
     /// Create a new builder from a config.
     pub fn new(config: Config) -> Self {
         Self { config, data: None }
@@ -59,8 +29,6 @@ where
     }
 
     pub fn build<const N: usize>(self) -> Result<SpannIndex<N, F>, Box<dyn std::error::Error>> {
-        self.config.setup_logging();
-
         // Get data from either source
         let data = if let Some(data) = self.data {
             data
@@ -108,8 +76,7 @@ where
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct ClusteringParams<F: Float> {
+pub struct ClusteringParams<F: AdriannFloat> {
     pub distance_metric: Arc<dyn DistanceMetric<F>>,
     pub initialization_method: InitializationMethod,
     pub desired_cluster_size: usize,
@@ -117,7 +84,6 @@ pub struct ClusteringParams<F: Float> {
     pub rng_seed: Option<u64>,
 }
 
-#[derive(Debug, Clone)]
 pub struct Cluster {
     pub centroid_idx: Option<usize>, // Store index of centroid in this cluster. SPANN uses real vectors as centroids.
     pub points: Vec<usize>,          // Store indices of points in this cluster

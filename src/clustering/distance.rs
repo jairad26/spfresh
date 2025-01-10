@@ -1,11 +1,10 @@
 use ndarray::ArrayView1;
 use ndarray_stats::DeviationExt;
-use num_traits::{Float, Signed};
 use std::fmt::Debug;
-use std::ops::AddAssign;
+use crate::clustering::float::AdriannFloat;
 
 /// Trait defining the interface for distance metrics
-pub trait DistanceMetric<F: Float + Signed + AddAssign>: Debug + Sync + Send {
+pub trait DistanceMetric<F: AdriannFloat>: {
     /// Computes the distance between two points. Panics if the points have different dimensions.
     fn compute(&self, point1: &ArrayView1<F>, point2: &ArrayView1<F>) -> F;
 }
@@ -14,7 +13,7 @@ pub trait DistanceMetric<F: Float + Signed + AddAssign>: Debug + Sync + Send {
 #[derive(Debug, Clone, Copy)]
 pub struct SquaredEuclideanDistance;
 
-impl<F: Float + Signed + AddAssign> DistanceMetric<F> for SquaredEuclideanDistance {
+impl<F: AdriannFloat> DistanceMetric<F> for SquaredEuclideanDistance {
     #[inline]
     fn compute(&self, point1: &ArrayView1<F>, point2: &ArrayView1<F>) -> F {
         point1.sq_l2_dist(point2).unwrap()
@@ -25,7 +24,7 @@ impl<F: Float + Signed + AddAssign> DistanceMetric<F> for SquaredEuclideanDistan
 #[derive(Debug, Clone, Copy)]
 pub struct ManhattanDistance;
 
-impl<F: Float + Signed + AddAssign> DistanceMetric<F> for ManhattanDistance {
+impl<F: AdriannFloat> DistanceMetric<F> for ManhattanDistance {
     #[inline]
     fn compute(&self, point1: &ArrayView1<F>, point2: &ArrayView1<F>) -> F {
         point1.l1_dist(point2).unwrap()
@@ -36,7 +35,7 @@ impl<F: Float + Signed + AddAssign> DistanceMetric<F> for ManhattanDistance {
 #[derive(Debug, Clone, Copy)]
 pub struct ChebyshevDistance;
 
-impl<F: Float + Signed + AddAssign> DistanceMetric<F> for ChebyshevDistance {
+impl<F: AdriannFloat> DistanceMetric<F> for ChebyshevDistance {
     #[inline]
     fn compute(&self, point1: &ArrayView1<F>, point2: &ArrayView1<F>) -> F {
         point1.linf_dist(point2).unwrap()
