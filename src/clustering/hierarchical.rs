@@ -1,17 +1,17 @@
-use crate::clustering::{Cluster, ClusteringParams, InitializationMethod};
 use crate::clustering::float::AdriannFloat;
+use crate::clustering::{Cluster, ClusteringParams, InitializationMethod};
 use log::{debug, error};
 use ndarray::{Array1, ArrayView2, Axis};
 use rand::rngs::SmallRng;
 use rand::seq::{IteratorRandom, SliceRandom};
 use rand::SeedableRng;
+use rayon::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
-use rayon::prelude::*;
 
 fn compute_mean<F>(data: &ArrayView2<F>, indices: &[usize]) -> Array1<F>
 where
-    F: AdriannFloat + std::ops::Add<Output = F>
+    F: AdriannFloat + std::ops::Add<Output = F>,
 {
     if indices.is_empty() {
         return Array1::<F>::zeros(data.ncols());
@@ -28,7 +28,7 @@ pub struct HierarchicalClustering<'a, const N: usize, F: AdriannFloat> {
 
 impl<'a, const N: usize, F: AdriannFloat> HierarchicalClustering<'a, N, F>
 where
-    F: AdriannFloat
+    F: AdriannFloat,
 {
     /// A constant factor for deciding whether a point is a "boundary" point
     /// (i.e., it’s also close enough to other clusters).
@@ -138,7 +138,7 @@ where
                         (pt, d)
                     })
                     .reduce(
-                        || (0,  <F as num_traits::Float>::max_value()),
+                        || (0, <F as num_traits::Float>::max_value()),
                         |(min_idx, min_dist), (pt, dist)| {
                             if dist < min_dist {
                                 (pt, dist)

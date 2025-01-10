@@ -1,12 +1,12 @@
+use crate::clustering::float::AdriannFloat;
 use crate::clustering::{distance::SquaredEuclideanDistance, Cluster, DistanceMetric};
 use colored::Colorize;
 use ndarray::Array2;
 use std::fmt;
-use crate::clustering::float::AdriannFloat;
 
 pub fn print_cluster_analysis<F>(clusters: &[Cluster], data: &Array2<F>)
 where
-    F: AdriannFloat
+    F: AdriannFloat,
 {
     println!("\n{}", "=== Cluster Analysis ===".bold());
 
@@ -18,7 +18,7 @@ where
 
 fn calculate_cluster_stats<F>(clusters: &[Cluster], data: &Array2<F>) -> Vec<ClusterStats>
 where
-    F: AdriannFloat
+    F: AdriannFloat,
 {
     clusters
         .iter()

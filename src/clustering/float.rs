@@ -11,12 +11,11 @@ pub trait AdriannFloat:
     + Debug
     + Default
     + AddAssign
-    +  Serialize
+    + Serialize
     + for<'de> Deserialize<'de>
     + FloatCore
-
     + Signed
-    +  Copy
+    + Copy
     + Sync
     + Send
     + FromPrimitive

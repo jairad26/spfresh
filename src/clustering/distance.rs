@@ -1,7 +1,7 @@
+use crate::clustering::float::AdriannFloat;
 use ndarray::ArrayView1;
 use ndarray_stats::DeviationExt;
 use std::fmt::Debug;
-use crate::clustering::float::AdriannFloat;
 
 /// Trait defining the interface for distance metrics
 pub trait DistanceMetric<F: AdriannFloat>: Send + Sync {
