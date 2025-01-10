@@ -64,7 +64,6 @@ impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
     }
 
     pub fn load<const N: usize>(&self) -> Result<SpannIndex<N, F>, Box<dyn std::error::Error>> {
-        self.config.setup_logging();
         let mut spann_index = SpannIndex::<N, F>::new();
         if let Some(output_path) = &self.config.output_path {
             let _ = spann_index.load_posting_list(&format!("{}/output.posting", output_path));

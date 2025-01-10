@@ -24,14 +24,23 @@ fn build_index<const D: usize>(data: &Array2<f32>) -> adriann::clustering::Spann
         .expect("Failed to build SPANN index")
 }
 
+fn load_index<const D: usize>() -> adriann::clustering::SpannIndex<D, f32> {
+    let config: Config =
+        Config::from_file("examples/config.yaml").expect("Failed to load configuration");
+
+    SpannIndexBuilder::<f32>::new(config)
+        .load::<D>()
+        .expect("Failed to build SPANN index")
+}
+
 fn bench_index_build(c: &mut Criterion) {
     let mut group = c.benchmark_group("SPANN Index Build");
 
     // Test different dataset sizes
     let sizes = vec![
-        (1_000, 128),     // Small dataset
-        (10_000, 128),    // Medium dataset
-        (100_000, 128),   // Large dataset
+        (1_000, 128),  // Small dataset
+        (10_000, 128), // Medium dataset
+        (100_000, 128), // Large dataset
         (1_000_000, 128), // Very Large dataset
     ];
 
@@ -50,6 +59,33 @@ fn bench_index_build(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_load(c: &mut Criterion) {
+    let mut group = c.benchmark_group("SPANN Index Load");
+
+    // Test different dataset sizes
+    let sizes = vec![
+        (1_000, 128),   // Small dataset
+        (10_000, 128),  // Medium dataset
+        (100_000, 128), // Large dataset
+        (1_000_000, 128), // Very Large dataset
+    ];
+
+    for (num_points, dims) in sizes {
+        group.bench_with_input(
+            BenchmarkId::from_parameter(format!("{}x{}", num_points, dims)),
+            &(num_points, dims),
+            |b, &(n, d)| {
+                let data = generate_random_data(n, d, 42);
+                let _ = build_index::<128>(&data);
+                b.iter(|| {
+                    black_box(load_index::<128>());
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
 fn bench_search(c: &mut Criterion) {
     let mut group = c.benchmark_group("SPANN Search");
 
@@ -58,6 +94,7 @@ fn bench_search(c: &mut Criterion) {
         (1_000, 128, 10),   // Small dataset, k=10
         (10_000, 128, 10),  // Medium dataset, k=10
         (100_000, 128, 10), // Large dataset, k=10
+        (1_000_000, 128, 10), // Very Large dataset, k=10
     ];
 
     for (num_points, dims, k) in sizes {
@@ -87,5 +124,5 @@ fn bench_search(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_index_build, bench_search);
+criterion_group!(benches, bench_load, bench_index_build, bench_search);
 criterion_main!(benches);
