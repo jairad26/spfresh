@@ -7,7 +7,7 @@ use flate2::Compression;
 use kiddo::KdTree;
 use log::error;
 use std::fs::File;
-
+use std::io::BufWriter;
 use crate::clustering::distance::{DistanceMetric, SquaredEuclideanDistance};
 use crate::clustering::posting_lists::{InMemoryPostingListStore, PostingListStore};
 use crate::clustering::Cluster;
@@ -104,8 +104,8 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
     }
 
     pub fn save_kdtree(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let file = File::create(path)?;
-        let encoder = GzEncoder::new(file, Compression::default());
+        let file = BufWriter::new(File::create(path)?);
+        let encoder = GzEncoder::new(file, Compression::fast());
         if let Some(tree) = &self.kdtree {
             match bincode::serialize_into(encoder, tree) {
                 Ok(_) => Ok(()),
