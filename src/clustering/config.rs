@@ -1,7 +1,7 @@
 use super::distance::{ChebyshevDistance, ManhattanDistance, SquaredEuclideanDistance};
 use crate::clustering::float::AdriannFloat;
 use crate::clustering::{ClusteringParams, InitializationMethod};
-use log::LevelFilter;
+use log::{error, LevelFilter};
 use ndarray::Array2;
 use serde::Deserialize;
 use std::{fmt, sync::Arc};
@@ -146,7 +146,7 @@ impl Config {
             .filter_level(level_filter)
             .try_init()
         {
-            eprintln!("Failed to initialize logger: {}", e);
+            error!("Failed to initialize logger: {}", e);
         }
     }
 

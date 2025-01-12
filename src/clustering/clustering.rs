@@ -5,6 +5,7 @@ use crate::clustering::hierarchical::HierarchicalClustering;
 use crate::clustering::DistanceMetric;
 use ndarray::ArrayView2;
 use std::sync::Arc;
+use log::info;
 
 pub enum InitializationMethod {
     Random,
@@ -29,6 +30,7 @@ impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
     }
 
     pub fn build<const N: usize>(self) -> Result<SpannIndex<N, F>, Box<dyn std::error::Error>> {
+        info!("Building SPANN index with configuration: {}", self.config.to_string());
         // Get data from either source
         let data = if let Some(data) = self.data {
             data

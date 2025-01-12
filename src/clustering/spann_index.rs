@@ -39,7 +39,7 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
                 Ok(())
             }
             Err(e) => {
-                eprintln!("Failed to load posting list from {}: {}", path, e);
+                error!("Failed to load posting list from {}: {}", path, e);
                 Err(Box::new(e))
             }
         }
@@ -50,7 +50,7 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
             posting_list_store.save_to_file(path)?;
             Ok(())
         } else {
-            eprintln!("Posting list is not available");
+            error!("Posting list is not available");
             Err("Posting list is not available".into())
         }
     }
@@ -110,12 +110,12 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
             match bincode::serialize_into(encoder, tree) {
                 Ok(_) => Ok(()),
                 Err(e) => {
-                    eprintln!("Failed to serialize KD-Tree to {}: {}", path, e);
+                    error!("Failed to serialize KD-Tree to {}: {}", path, e);
                     Err(Box::new(e))
                 }
             }
         } else {
-            eprintln!("KD-Tree is not available");
+            error!("KD-Tree is not available");
             Err("KD-Tree is not available".into())
         }
     }
@@ -129,7 +129,7 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
                 Ok(())
             }
             Err(e) => {
-                eprintln!("Failed to deserialize KD-Tree from {}: {}", path, e);
+                error!("Failed to deserialize KD-Tree from {}: {}", path, e);
                 Err(Box::new(e))
             }
         }
