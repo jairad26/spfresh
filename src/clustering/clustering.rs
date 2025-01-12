@@ -50,7 +50,6 @@ impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
         let mut clustering: HierarchicalClustering<N, F> =
             HierarchicalClustering::new(clustering_params, data);
         clustering.fit()?;
-        //visualization::print_cluster_analysis(&clustering.clusters, &data.to_owned());
 
         let mut spann_index = SpannIndex::<N, F>::new();
         spann_index.create_posting_lists(&clustering.data, &clustering.clusters);
