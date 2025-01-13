@@ -1,7 +1,7 @@
 use fxhash::FxHashMap;
 use ndarray::Array2;
 use serde::{Deserialize, Serialize};
-use std::{fs, io};
+use std::{fs, io, path::PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct PointData<F> {
@@ -11,49 +11,61 @@ pub struct PointData<F> {
 
 pub trait PostingListStore<F>: Sized {
     /// Insert or update the posting list for a given `cluster_id`.
-    fn insert_posting_list(&mut self, cluster_id: usize, vectors: Array2<F>, point_ids: Vec<usize>);
-
-    /// Retrieve a reference to the posting list for `cluster_id`.
-    fn get_posting_list(&self, cluster_id: usize) -> Option<&[PointData<F>]>;
-
-    /// Save the entire posting-list data structure to a binary file.
-    fn save_to_file(&self, file_path: &str) -> io::Result<()>;
-
-    /// Load a new `Self` from a binary file.
-    fn load_from_file(file_path: &str) -> io::Result<Self>
-    where
-        Self: Sized;
+    fn insert_posting_list(
+        &mut self,
+        cluster_id: usize,
+        vectors: Array2<F>,
+        point_ids: Vec<usize>,
+    ) -> io::Result<()>;
+    fn get_posting_list(&self, cluster_id: usize) -> io::Result<Option<Vec<PointData<F>>>>;
+    fn save_to_directory(&self) -> io::Result<()>;
+    fn load_from_directory(dir_path: &str) -> io::Result<Self>;
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct InMemoryPostingListStore<F> {
-    data: FxHashMap<usize, Vec<PointData<F>>>,
+pub struct FileBasedPostingListStore {
+    base_directory: PathBuf,
+    cluster_ids: FxHashMap<usize, ()>, // Track which cluster IDs exist
 }
 
-impl<F> Default for InMemoryPostingListStore<F> {
-    fn default() -> Self {
-        Self::new()
+impl FileBasedPostingListStore {
+    pub fn new(directory: &str) -> io::Result<Self> {
+        let base_directory = PathBuf::from(directory);
+        fs::create_dir_all(&base_directory)?;
+
+        Ok(Self {
+            base_directory,
+            cluster_ids: FxHashMap::default(),
+        })
     }
-}
 
-impl<F> InMemoryPostingListStore<F> {
-    /// Create a new, empty in-memory store.
-    pub fn new() -> Self {
-        Self {
-            data: FxHashMap::default(),
+    fn get_posting_list_path(&self, cluster_id: usize) -> PathBuf {
+        self.base_directory
+            .join(format!("posting_list_{}.bin", cluster_id))
+    }
+
+    fn load_cluster_ids(directory: &PathBuf) -> io::Result<FxHashMap<usize, ()>> {
+        let path = directory.join("cluster_ids.bin");
+        if !path.exists() {
+            return Ok(FxHashMap::default());
         }
+
+        let bytes = fs::read(path)?;
+        let cluster_ids: Vec<usize> =
+            bincode::deserialize(&bytes).map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+
+        Ok(cluster_ids.into_iter().map(|id| (id, ())).collect())
     }
 }
 
 impl<F: Serialize + for<'de> Deserialize<'de> + Clone> PostingListStore<F>
-    for InMemoryPostingListStore<F>
+    for FileBasedPostingListStore
 {
     fn insert_posting_list(
         &mut self,
         cluster_id: usize,
         vectors: Array2<F>,
         point_ids: Vec<usize>,
-    ) {
+    ) -> io::Result<()> {
         assert_eq!(
             vectors.nrows(),
             point_ids.len(),
@@ -70,26 +82,51 @@ impl<F: Serialize + for<'de> Deserialize<'de> + Clone> PostingListStore<F>
             })
             .collect();
 
-        self.data.insert(cluster_id, points);
+        let file_path = self.get_posting_list_path(cluster_id);
+        let encoded = bincode::serialize(&points)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+
+        fs::write(&file_path, encoded)?;
+
+        self.cluster_ids.insert(cluster_id, ());
+        PostingListStore::<F>::save_to_directory(self)?;
+
+        Ok(())
     }
 
-    fn get_posting_list(&self, cluster_id: usize) -> Option<&[PointData<F>]> {
-        self.data.get(&cluster_id).map(|v| v.as_slice())
+    fn get_posting_list(&self, cluster_id: usize) -> io::Result<Option<Vec<PointData<F>>>> {
+        if !self.cluster_ids.contains_key(&cluster_id) {
+            return Ok(None);
+        }
+        let file_path = self.get_posting_list_path(cluster_id);
+        let points = bincode::deserialize(&fs::read(&file_path)?)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+        Ok(Some(points))
     }
 
-    fn save_to_file(&self, file_path: &str) -> io::Result<()> {
-        let encoded =
-            bincode::serialize(self).map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-        fs::write(file_path, encoded)
+    fn save_to_directory(&self) -> io::Result<()> {
+        // Save cluster IDs in the new directory
+        let encoded = bincode::serialize(&self.cluster_ids.keys().collect::<Vec<_>>())
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        Ok(fs::write(
+            self.base_directory.join("cluster_ids.bin"),
+            encoded,
+        )?)
     }
 
-    fn load_from_file(file_path: &str) -> io::Result<Self> {
-        let bytes = fs::read(file_path)?;
-        let store: Self =
-            bincode::deserialize(&bytes).map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-        Ok(store)
+    fn load_from_directory(dir_path: &str) -> io::Result<Self> {
+        let base_directory = PathBuf::from(dir_path);
+        if !base_directory.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "Directory does not exist",
+            ));
+        }
+
+        let cluster_ids = Self::load_cluster_ids(&base_directory)?;
+        Ok(Self {
+            base_directory,
+            cluster_ids,
+        })
     }
 }
-
-pub type InMemoryPostingListStoreF32 = InMemoryPostingListStore<f32>;
-pub type InMemoryPostingListStoreF64 = InMemoryPostingListStore<f64>;

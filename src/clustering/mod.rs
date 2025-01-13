@@ -12,5 +12,5 @@ pub use distance::{
     ChebyshevDistance, DistanceMetric, ManhattanDistance, SquaredEuclideanDistance,
 };
 pub use hierarchical::HierarchicalClustering;
-pub use posting_lists::{InMemoryPostingListStore, PostingListStore};
+pub use posting_lists::{FileBasedPostingListStore, PostingListStore};
 pub use spann_index::SpannIndex;

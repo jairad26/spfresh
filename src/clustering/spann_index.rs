@@ -1,39 +1,35 @@
 use std::io;
 
+use crate::clustering::distance::{DistanceMetric, SquaredEuclideanDistance};
 use crate::clustering::float::AdriannFloat;
+use crate::clustering::posting_lists::{FileBasedPostingListStore, PostingListStore};
+use crate::clustering::Cluster;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use kiddo::KdTree;
 use log::error;
+use ndarray::{Array2, ArrayView1, ArrayView2};
 use std::fs::File;
 use std::io::BufWriter;
-use crate::clustering::distance::{DistanceMetric, SquaredEuclideanDistance};
-use crate::clustering::posting_lists::{InMemoryPostingListStore, PostingListStore};
-use crate::clustering::Cluster;
-use ndarray::{Array2, ArrayView1, ArrayView2};
 
 pub struct SpannIndex<const N: usize, F: AdriannFloat> {
     pub kdtree: Option<KdTree<F, N>>,
-    pub posting_list_store: Option<InMemoryPostingListStore<F>>,
-}
-
-impl<const N: usize, F: AdriannFloat> Default for SpannIndex<N, F> {
-    fn default() -> Self {
-        Self::new()
-    }
+    pub posting_list_store: Option<FileBasedPostingListStore>,
+    posting_list_dir: String,
 }
 
 impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
-    pub fn new() -> Self {
-        Self {
+    pub fn new(posting_lists_dir: &str) -> io::Result<Self> {
+        Ok(Self {
             kdtree: None,
             posting_list_store: None,
-        }
+            posting_list_dir: posting_lists_dir.to_string(),
+        })
     }
 
     pub fn load_posting_list(&mut self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
-        match PostingListStore::load_from_file(path) {
+        match PostingListStore::<F>::load_from_directory(path) {
             Ok(posting_list_store) => {
                 self.posting_list_store = Some(posting_list_store);
                 Ok(())
@@ -45,9 +41,9 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
         }
     }
 
-    pub fn save_posting_list(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn save_posting_list(&self) -> Result<(), Box<dyn std::error::Error>> {
         if let Some(posting_list_store) = &self.posting_list_store {
-            posting_list_store.save_to_file(path)?;
+            PostingListStore::<F>::save_to_directory(posting_list_store)?;
             Ok(())
         } else {
             error!("Posting list is not available");
@@ -55,13 +51,14 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
         }
     }
 
-    /// Create a memory-based posting list from the given clusters.
+    /// Create disk-backed posting list from the given clusters.
     pub fn create_posting_lists(
         &mut self,
         data: &ArrayView2<F>,
         clusters: &[Cluster],
-    ) -> Option<&InMemoryPostingListStore<F>> {
-        let mut posting_list_store = InMemoryPostingListStore::<F>::new();
+    ) -> Option<&FileBasedPostingListStore> {
+        let mut posting_list_store = FileBasedPostingListStore::new(&self.posting_list_dir)
+            .expect("Failed to create posting list store");
 
         for (cluster_id, cluster) in clusters.iter().enumerate() {
             let num_points = cluster.points.len();
@@ -71,8 +68,15 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
             for (i, &point_idx) in cluster.points.iter().enumerate() {
                 points_array.row_mut(i).assign(&data.row(point_idx));
             }
-            // change to view
-            posting_list_store.insert_posting_list(cluster_id, points_array, point_ids);
+            if let Err(e) =
+                posting_list_store.insert_posting_list(cluster_id, points_array, point_ids)
+            {
+                error!(
+                    "Failed to insert posting list for cluster {}: {}",
+                    cluster_id, e
+                );
+                return None;
+            }
         }
         self.posting_list_store = Some(posting_list_store);
         self.posting_list_store.as_ref()
@@ -93,10 +97,15 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
         let mut tree: KdTree<F, N> = KdTree::new();
         for (cluster_id, cluster) in clusters.iter().enumerate() {
             if let Some(centroid_idx) = cluster.centroid_idx {
-                let row = data.row(centroid_idx);
-                let array_slice = row.as_slice().expect("Data row mismatch");
-                let array: [F; N] = array_slice.try_into().expect("Length mismatch");
-                tree.add(&array, cluster_id as u64);
+                if let Some(array_slice) = data.row(centroid_idx).as_slice() {
+                    if let Ok(array) = array_slice.try_into() {
+                        tree.add(&array, cluster_id as u64);
+                    } else {
+                        error!("Centroid length mismatch for cluster {}", cluster_id);
+                    }
+                } else {
+                    error!("Failed to extract centroid row for cluster {}", cluster_id);
+                }
             }
         }
         self.kdtree = Some(tree);
@@ -135,23 +144,6 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
         }
     }
 
-    /// Saves the KD-tree and posting lists to disk.
-    pub fn store_index(
-        &mut self,
-        kdtree_path: &str,
-        posting_list_path: &str,
-        data: &ArrayView2<F>,
-        clusters: &[Cluster],
-    ) -> io::Result<()> {
-        self.build_kdtree(data, clusters);
-        self.create_posting_lists(data, clusters)
-            .expect("Error creating posting lists");
-        self.save_kdtree(kdtree_path).expect("Error saving KD-Tree");
-        self.save_posting_list(posting_list_path)
-            .expect("Error saving posting list");
-        Ok(())
-    }
-
     pub fn find_k_nearest_neighbor_spann(
         &self,
         query: &ArrayView1<F>,
@@ -165,14 +157,14 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
 
         let query_array: [F; N] = query
             .as_slice()
-            .expect("Query length mismatch")
-            .try_into()
+            .and_then(|slice| slice.try_into().ok())
             .expect("Query length mismatch");
+
         let nearest_centroids = tree.nearest_n::<kiddo::SquaredEuclidean>(&query_array, k);
 
         let mut all_candidates: Vec<(F, usize)> = Vec::new();
         for nn in nearest_centroids {
-            if let Some(points) = posting_list_store.get_posting_list(nn.item as usize) {
+            if let Ok(Some(points)) = posting_list_store.get_posting_list(nn.item as usize) {
                 for point_data in points {
                     let point_vector = ArrayView1::from(&point_data.vector);
                     let dist = SquaredEuclideanDistance.compute(&query.view(), &point_vector);
