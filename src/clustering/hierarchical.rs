@@ -56,10 +56,12 @@ where
         while i < self.clusters.len() {
             let cluster_size = self.clusters[i].points.len();
 
-            if cluster_size > self.params.desired_cluster_size {
+            if cluster_size > self.params.desired_cluster_size.unwrap() {
                 debug!(
                     "Subdividing cluster {} with size {} until we get to {}",
-                    i, cluster_size, self.params.desired_cluster_size
+                    i,
+                    cluster_size,
+                    self.params.desired_cluster_size.unwrap()
                 );
 
                 // Get the points from the current cluster

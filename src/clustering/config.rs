@@ -10,7 +10,6 @@ use std::{fmt, sync::Arc};
 pub struct ClusteringParamsConfig {
     pub distance_metric: String,       // E.g., "Euclidean"
     pub initialization_method: String, // E.g., "KMeansPlusPlus"
-    pub desired_cluster_size: usize,
     pub initial_k: usize,
 }
 
@@ -31,11 +30,6 @@ impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Configuration:")?;
         writeln!(f, "  Clustering Parameters:")?;
-        writeln!(
-            f,
-            "    Desired Cluster Size: {}",
-            self.clustering_params.desired_cluster_size
-        )?;
         writeln!(f, "    Initial K: {}", self.clustering_params.initial_k)?;
         writeln!(
             f,
@@ -95,10 +89,6 @@ impl Config {
             }
         }
 
-        // Validate numeric parameters
-        if self.clustering_params.desired_cluster_size == 0 {
-            return Err("desired_cluster_size must be greater than 0".to_string());
-        }
         if self.clustering_params.initial_k == 0 {
             return Err("initial_k must be greater than 0".to_string());
         }
@@ -126,7 +116,7 @@ impl Config {
                     self.clustering_params.initialization_method
                 ),
             },
-            desired_cluster_size: self.clustering_params.desired_cluster_size,
+            desired_cluster_size: None,
             initial_k: self.clustering_params.initial_k,
             rng_seed: None,
         }

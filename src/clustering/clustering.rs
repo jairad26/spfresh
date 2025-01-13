@@ -3,9 +3,9 @@ use crate::clustering::config::Config;
 use crate::clustering::float::AdriannFloat;
 use crate::clustering::hierarchical::HierarchicalClustering;
 use crate::clustering::DistanceMetric;
+use log::info;
 use ndarray::ArrayView2;
 use std::sync::Arc;
-use log::info;
 
 pub enum InitializationMethod {
     Random,
@@ -30,7 +30,10 @@ impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
     }
 
     pub fn build<const N: usize>(self) -> Result<SpannIndex<N, F>, Box<dyn std::error::Error>> {
-        info!("Building SPANN index with configuration: {}", self.config.to_string());
+        info!(
+            "Building SPANN index with configuration: {}",
+            self.config.to_string()
+        );
         // Get data from either source
         let data = if let Some(data) = self.data {
             data
@@ -48,38 +51,41 @@ impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
             .into());
         }
 
-        let clustering_params = self.config.to_clustering_params();
+        let mut clustering_params = self.config.to_clustering_params();
+        clustering_params.desired_cluster_size =
+            Some((data.nrows() as f64 * 0.18).round() as usize);
         let mut clustering: HierarchicalClustering<N, F> =
             HierarchicalClustering::new(clustering_params, data);
         clustering.fit()?;
 
-        let mut spann_index = SpannIndex::<N, F>::new();
-        spann_index.create_posting_lists(&clustering.data, &clustering.clusters);
-        spann_index.build_kdtree(&clustering.data, &clustering.clusters);
-
         if let Some(output_path) = &self.config.output_path {
-            let _ = spann_index.save_posting_list(&format!("{}/output.posting", output_path));
+            let mut spann_index = SpannIndex::<N, F>::new(output_path).unwrap();
+            spann_index.create_posting_lists(&clustering.data, &clustering.clusters);
+            spann_index.build_kdtree(&clustering.data, &clustering.clusters);
+            let _ = spann_index.save_posting_list();
             let _ = spann_index.save_kdtree(&format!("{}/output.kdtree", output_path));
+            Ok(spann_index)
+        } else {
+            Err("Output path is not specified".into())
         }
-        Ok(spann_index)
     }
 
     pub fn load<const N: usize>(&self) -> Result<SpannIndex<N, F>, Box<dyn std::error::Error>> {
-        let mut spann_index = SpannIndex::<N, F>::new();
         if let Some(output_path) = &self.config.output_path {
+            let mut spann_index = SpannIndex::<N, F>::new(output_path).unwrap();
             let _ = spann_index.load_posting_list(&format!("{}/output.posting", output_path));
             let _ = spann_index.load_kdtree(&format!("{}/output.kdtree", output_path));
+            Ok(spann_index)
         } else {
-            return Err("Output path is not specified".into());
+            Err("Output path is not specified".into())
         }
-        Ok(spann_index)
     }
 }
 
 pub struct ClusteringParams<F: AdriannFloat> {
     pub distance_metric: Arc<dyn DistanceMetric<F>>,
     pub initialization_method: InitializationMethod,
-    pub desired_cluster_size: usize,
+    pub desired_cluster_size: Option<usize>,
     pub initial_k: usize,
     pub rng_seed: Option<u64>,
 }

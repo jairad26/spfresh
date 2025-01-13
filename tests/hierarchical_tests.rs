@@ -18,7 +18,7 @@ mod tests {
         let params = ClusteringParams {
             distance_metric: Arc::new(SquaredEuclideanDistance),
             initialization_method: InitializationMethod::KMeansPlusPlus,
-            desired_cluster_size: 2,
+            desired_cluster_size: Some(2),
             initial_k: 3,
             rng_seed: Some(42),
         };
