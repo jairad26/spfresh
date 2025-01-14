@@ -38,9 +38,9 @@ fn bench_index_build(c: &mut Criterion) {
 
     // Test different dataset sizes
     let sizes = vec![
-        (1_000, 128),  // Small dataset
-        (10_000, 128), // Medium dataset
-        (100_000, 128), // Large dataset
+        (1_000, 128),     // Small dataset
+        (10_000, 128),    // Medium dataset
+        (100_000, 128),   // Large dataset
         (1_000_000, 128), // Very Large dataset
     ];
 
@@ -64,9 +64,9 @@ fn bench_load(c: &mut Criterion) {
 
     // Test different dataset sizes
     let sizes = vec![
-        (1_000, 128),   // Small dataset
-        (10_000, 128),  // Medium dataset
-        (100_000, 128), // Large dataset
+        (1_000, 128),     // Small dataset
+        (10_000, 128),    // Medium dataset
+        (100_000, 128),   // Large dataset
         (1_000_000, 128), // Very Large dataset
     ];
 
@@ -91,9 +91,9 @@ fn bench_search(c: &mut Criterion) {
 
     // Test different dataset sizes
     let sizes = vec![
-        (1_000, 128, 10),   // Small dataset, k=10
-        (10_000, 128, 10),  // Medium dataset, k=10
-        (100_000, 128, 10), // Large dataset, k=10
+        (1_000, 128, 10),     // Small dataset, k=10
+        (10_000, 128, 10),    // Medium dataset, k=10
+        (100_000, 128, 10),   // Large dataset, k=10
         (1_000_000, 128, 10), // Very Large dataset, k=10
     ];
 

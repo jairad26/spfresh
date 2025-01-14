@@ -2,6 +2,7 @@ use fxhash::FxHashMap;
 use ndarray::Array2;
 use serde::{Deserialize, Serialize};
 use std::{fs, io, path::PathBuf};
+use std::path::Path;
 
 #[derive(Serialize, Deserialize)]
 pub struct PointData<F> {
@@ -43,7 +44,7 @@ impl FileBasedPostingListStore {
             .join(format!("posting_list_{}.bin", cluster_id))
     }
 
-    fn load_cluster_ids(directory: &PathBuf) -> io::Result<FxHashMap<usize, ()>> {
+    fn load_cluster_ids(directory: &Path) -> io::Result<FxHashMap<usize, ()>> {
         let path = directory.join("cluster_ids.bin");
         if !path.exists() {
             return Ok(FxHashMap::default());
@@ -108,10 +109,10 @@ impl<F: Serialize + for<'de> Deserialize<'de> + Clone> PostingListStore<F>
         // Save cluster IDs in the new directory
         let encoded = bincode::serialize(&self.cluster_ids.keys().collect::<Vec<_>>())
             .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-        Ok(fs::write(
+        fs::write(
             self.base_directory.join("cluster_ids.bin"),
             encoded,
-        )?)
+        )
     }
 
     fn load_from_directory(dir_path: &str) -> io::Result<Self> {
