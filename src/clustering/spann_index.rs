@@ -161,6 +161,7 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
             .expect("Query length mismatch");
 
         let nearest_centroids = tree.nearest_n::<kiddo::SquaredEuclidean>(&query_array, k);
+        let threshold = F::from(1.2).unwrap() * nearest_centroids[0].distance;
 
         let mut all_candidates: Vec<(F, usize)> = Vec::new();
         for nn in nearest_centroids {
@@ -168,7 +169,12 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
                 for point_data in points {
                     let point_vector = ArrayView1::from(&point_data.vector);
                     let dist = SquaredEuclideanDistance.compute(&query.view(), &point_vector);
-                    all_candidates.push((dist, point_data.point_id));
+                    // query-aware dynamic pruning: we only search in a posting list iff the distance
+                    // between the centroid and the query is almost the same as the distance between the
+                    // query and the closest centroid.
+                    if dist <= threshold {
+                        all_candidates.push((dist, point_data.point_id));
+                    }
                 }
             }
         }
