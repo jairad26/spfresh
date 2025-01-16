@@ -11,6 +11,10 @@ readme = "README.md"
 keywords = ["nearest-neighbors", "spann", "adriANN", "high-scale"]
 categories = ["algorithms", "science", "development-tools"]
 
+[profile.release]
+codegen-units = 1
+lto = "fat"
+strip = true
 
 [dependencies]
 ndarray = { version="0.16", features=["serde"]}
