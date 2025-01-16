@@ -1,9 +1,10 @@
 use std::io;
 
-use crate::clustering::distance::{DistanceMetric, SquaredEuclideanDistance};
-use crate::clustering::float::AdriannFloat;
-use crate::clustering::posting_lists::{FileBasedPostingListStore, PostingListStore};
 use crate::clustering::Cluster;
+use crate::core::float::AdriannFloat;
+use crate::distances::distance::DistanceMetric;
+use crate::distances::SquaredEuclideanDistance;
+use crate::spann::posting_lists::{FileBasedPostingListStore, PostingListStore};
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;

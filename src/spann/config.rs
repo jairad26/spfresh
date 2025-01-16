@@ -1,6 +1,6 @@
-use super::distance::{ChebyshevDistance, ManhattanDistance, SquaredEuclideanDistance};
-use crate::clustering::float::AdriannFloat;
 use crate::clustering::{ClusteringParams, InitializationMethod};
+use crate::core::float::AdriannFloat;
+use crate::distances::{ChebyshevDistance, ManhattanDistance, SquaredEuclideanDistance};
 use log::{error, LevelFilter};
 use ndarray::Array2;
 use serde::Deserialize;

@@ -5,6 +5,6 @@
 /// # Modules
 /// - `clustering`: Contains the hierarchical clustering implementation.
 pub mod clustering;
-
-// Re-export key components for easier access
-pub use clustering::{Cluster, HierarchicalClustering};
+pub mod core;
+pub mod distances;
+pub mod spann;

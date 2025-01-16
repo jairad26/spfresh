@@ -1,8 +1,8 @@
 use fxhash::FxHashMap;
 use ndarray::Array2;
 use serde::{Deserialize, Serialize};
-use std::{fs, io, path::PathBuf};
 use std::path::Path;
+use std::{fs, io, path::PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct PointData<F> {
@@ -109,10 +109,7 @@ impl<F: Serialize + for<'de> Deserialize<'de> + Clone> PostingListStore<F>
         // Save cluster IDs in the new directory
         let encoded = bincode::serialize(&self.cluster_ids.keys().collect::<Vec<_>>())
             .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-        fs::write(
-            self.base_directory.join("cluster_ids.bin"),
-            encoded,
-        )
+        fs::write(self.base_directory.join("cluster_ids.bin"), encoded)
     }
 
     fn load_from_directory(dir_path: &str) -> io::Result<Self> {

@@ -1,5 +1,5 @@
-use crate::clustering::float::AdriannFloat;
 use crate::clustering::{Cluster, ClusteringParams, InitializationMethod};
+use crate::core::float::AdriannFloat;
 use log::{debug, error};
 use ndarray::{Array1, ArrayView2, Axis};
 use rand::rngs::SmallRng;

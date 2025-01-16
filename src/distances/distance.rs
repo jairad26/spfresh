@@ -1,4 +1,4 @@
-use crate::clustering::float::AdriannFloat;
+use crate::core::float::AdriannFloat;
 use ndarray::ArrayView1;
 use ndarray_stats::DeviationExt;
 use std::fmt::Debug;

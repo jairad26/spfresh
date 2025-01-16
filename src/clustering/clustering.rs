@@ -1,8 +1,8 @@
-use super::spann_index::SpannIndex;
-use crate::clustering::config::Config;
-use crate::clustering::float::AdriannFloat;
 use crate::clustering::hierarchical::HierarchicalClustering;
-use crate::clustering::DistanceMetric;
+use crate::core::float::AdriannFloat;
+use crate::distances::DistanceMetric;
+use crate::spann::config::Config;
+use crate::spann::SpannIndex;
 use log::info;
 use ndarray::ArrayView2;
 use std::sync::Arc;

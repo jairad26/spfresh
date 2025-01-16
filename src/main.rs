@@ -1,8 +1,8 @@
 use std::fs::File;
 use std::io::BufReader;
 
-use adriann::clustering::config::Config;
 use adriann::clustering::SpannIndexBuilder;
+use adriann::spann::config::Config;
 use log::info;
 use ndarray::Array2;
 use std::io::Read;
