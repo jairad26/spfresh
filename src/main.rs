@@ -104,9 +104,10 @@ fn main() {
     let k = get_groundtruth_k(&groundtruth);
     // Benchmark nearest neighbor search
     for (i, query_vector) in query.rows().into_iter().enumerate() {
-        let result = spann_index
+        let result_points = spann_index
             .find_k_nearest_neighbor_spann(&query_vector, k)
             .unwrap();
+        let result: Vec<usize> = result_points.iter().map(|point| point.point_id).collect();
         // Compare with ground truth (if available)
         if let Some(gt) = groundtruth.get(i) {
             compare_results(&result, gt);

@@ -66,7 +66,7 @@ impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
     pub fn load<const N: usize>(&self) -> Result<SpannIndex<N, F>, Box<dyn std::error::Error>> {
         if let Some(output_path) = &self.config.output_path {
             let mut spann_index = SpannIndex::<N, F>::new(output_path).unwrap();
-            let _ = spann_index.load_posting_list(&format!("{}/output.posting", output_path));
+            let _ = spann_index.load_posting_list(output_path);
             let _ = spann_index.load_kdtree(&format!("{}/output.kdtree", output_path));
             Ok(spann_index)
         } else {

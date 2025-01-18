@@ -4,7 +4,7 @@ use crate::clustering::Cluster;
 use crate::core::float::AdriannFloat;
 use crate::distances::distance::DistanceMetric;
 use crate::distances::SquaredEuclideanDistance;
-use crate::spann::posting_lists::{FileBasedPostingListStore, PostingListStore};
+use crate::spann::posting_lists::{FileBasedPostingListStore, PointData, PostingListStore};
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
@@ -149,7 +149,7 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
         &self,
         query: &ArrayView1<F>,
         k: usize,
-    ) -> Option<Vec<usize>> {
+    ) -> Option<Vec<PointData<F>>> {
         let tree = self.kdtree.as_ref().expect("KD-Tree is not available");
         let posting_list_store = self
             .posting_list_store
@@ -162,9 +162,9 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
             .expect("Query length mismatch");
 
         let nearest_centroids = tree.nearest_n::<kiddo::SquaredEuclidean>(&query_array, k);
-        let threshold = F::from(1.2).unwrap() * nearest_centroids[0].distance;
+        let threshold = F::from(1.2).unwrap() * (nearest_centroids[0].distance + F::epsilon());
 
-        let mut all_candidates: Vec<(F, usize)> = Vec::new();
+        let mut all_candidates: Vec<(F, PointData<F>)> = Vec::new();
         for nn in nearest_centroids {
             if let Ok(Some(points)) = posting_list_store.get_posting_list(nn.item as usize) {
                 for point_data in points {
@@ -174,7 +174,7 @@ impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
                     // between the centroid and the query is almost the same as the distance between the
                     // query and the closest centroid.
                     if dist <= threshold {
-                        all_candidates.push((dist, point_data.point_id));
+                        all_candidates.push((dist, point_data));
                     }
                 }
             }

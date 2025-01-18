@@ -18,9 +18,9 @@ fn main() {
         .expect("Failed to build SPANN index");
 
     let k = 10;
-    let query_vector = Array1::from(vec![1.0, 2.0]).view();
+    let query_vector = Array1::from(vec![1.0, 2.0]);
     let result = spann_index
-            .find_k_nearest_neighbor_spann(&query_vector, k)
+            .find_k_nearest_neighbor_spann(&query_vector.view(), k)
             .unwrap();
     println!("{:?}", result);
 }
