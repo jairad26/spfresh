@@ -2,7 +2,6 @@ use crate::clustering::{ClusteringParams, InitializationMethod};
 use crate::core::float::AdriannFloat;
 use crate::distances::{ChebyshevDistance, ManhattanDistance, SquaredEuclideanDistance};
 use log::{error, LevelFilter};
-use ndarray::Array2;
 use serde::Deserialize;
 use std::{fmt, sync::Arc};
 
@@ -138,11 +137,5 @@ impl Config {
         {
             error!("Failed to initialize logger: {}", e);
         }
-    }
-
-    /// Reads the dataset file.
-    pub fn load_data(&self) -> Array2<f64> {
-        // TODO: Replace with actual data loading logic.
-        Array2::<f64>::zeros((100, 2)) // Mocked data
     }
 }

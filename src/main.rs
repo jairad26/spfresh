@@ -1,11 +1,11 @@
 use std::fs::File;
 use std::io::BufReader;
 
-use adriann::clustering::SpannIndexBuilder;
 use adriann::spann::config::Config;
 use log::info;
 use ndarray::Array2;
 use std::io::Read;
+use adriann::spann::spann_builder::SpannIndexBuilder;
 
 fn read_fvecs_as_array(file_path: &str) -> Array2<f32> {
     let file = File::open(file_path).expect("Failed to open file");
@@ -88,7 +88,7 @@ fn main() {
     let data = read_fvecs_as_array("data/sift_small/siftsmall_base.fvecs");
     let query = read_fvecs_as_array("data/sift_small/siftsmall_query.fvecs");
     let config: Config =
-        Config::from_file("examples/config.yaml").expect("Failed to load configuration");
+        Config::from_file("examples/example_config.yaml").expect("Failed to load configuration");
     config.setup_logging();
 
     let spann_index = SpannIndexBuilder::<f32>::new(config)

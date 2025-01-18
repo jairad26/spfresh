@@ -1,7 +1,7 @@
 clustering_params:
   # Supported values for distance_metric include: "Euclidean", "Manhattan", "Chebyshev" (though Chebyshev is included in the code, the validation currently only allows "Euclidean" or "Manhattan").
   distance_metric: "Euclidean"
-  initialization_method: "KMeansPlusPlus"
+  initialization_method: "Random"
   initial_k: 4
 
 logging:

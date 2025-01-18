@@ -8,10 +8,12 @@ use rand::SeedableRng;
 use rayon::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
+use num_traits::FromPrimitive;
 
 fn compute_mean<F>(data: &ArrayView2<F>, indices: &[usize]) -> Array1<F>
 where
     F: AdriannFloat + std::ops::Add<Output = F>,
+    F: FromPrimitive
 {
     if indices.is_empty() {
         return Array1::<F>::zeros(data.ncols());
@@ -140,7 +142,7 @@ where
                         (pt, d)
                     })
                     .reduce(
-                        || (0, <F as num_traits::Float>::max_value()),
+                        || (0, F::infinity()),
                         |(min_idx, min_dist), (pt, dist)| {
                             if dist < min_dist {
                                 (pt, dist)
@@ -258,7 +260,7 @@ where
             let sum = distances.iter().fold(F::zero(), |acc, &x| acc + x);
             let weights: Vec<F> = distances
                 .par_iter()
-                .map(|&d| (d * d) / num_traits::Float::max(sum, F::from(1e-10).unwrap()))
+                .map(|&d| (d * d) / F::max(sum, F::from(1e-10).unwrap()))
                 .collect();
             let indices: Vec<_> = (0..n_points).collect();
             // Weighted selection
@@ -295,7 +297,7 @@ where
                 }
 
                 let (best_cluster, min_distance) = distances.iter().fold(
-                    (0, <F as num_traits::Float>::max_value()),
+                    (0, F::infinity()),
                     |(min_idx, min_dist), &(idx, dist)| {
                         if dist < min_dist {
                             (idx, dist)

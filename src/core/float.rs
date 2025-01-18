@@ -7,13 +7,12 @@ use std::ops::AddAssign;
 // A Float trait that captures the requirements we need for the various places
 // we need floats. These requirements are imposed by ndarray and kiddo
 pub trait AdriannFloat:
-    num_traits::Float
+    FloatCore
     + Debug
     + Default
     + AddAssign
     + Serialize
     + for<'de> Deserialize<'de>
-    + FloatCore
     + Signed
     + Copy
     + Sync

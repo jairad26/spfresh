@@ -1,10 +1,12 @@
-use adriann::clustering::{Config, SpannIndexBuilder};
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use ndarray::Array2;
 use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
 use rand::SeedableRng;
 use rand_distr::StandardNormal;
+use adriann::spann::config::Config;
+use adriann::spann::spann_builder::SpannIndexBuilder;
+use adriann::spann::SpannIndex;
 
 /// Generate random data matrix of specified size
 fn generate_random_data(rows: usize, cols: usize, seed: u64) -> Array2<f32> {
@@ -14,9 +16,9 @@ fn generate_random_data(rows: usize, cols: usize, seed: u64) -> Array2<f32> {
 }
 
 /// Build SPANN index for given data
-fn build_index<const D: usize>(data: &Array2<f32>) -> adriann::clustering::SpannIndex<D, f32> {
+fn build_index<const D: usize>(data: &Array2<f32>) -> SpannIndex<D, f32> {
     let config: Config =
-        Config::from_file("examples/config.yaml").expect("Failed to load configuration");
+        Config::from_file("examples/example_config.yaml").expect("Failed to load configuration");
 
     SpannIndexBuilder::<f32>::new(config)
         .with_data(data.view())
@@ -24,9 +26,9 @@ fn build_index<const D: usize>(data: &Array2<f32>) -> adriann::clustering::Spann
         .expect("Failed to build SPANN index")
 }
 
-fn load_index<const D: usize>() -> adriann::clustering::SpannIndex<D, f32> {
+fn load_index<const D: usize>() -> SpannIndex<D, f32> {
     let config: Config =
-        Config::from_file("examples/config.yaml").expect("Failed to load configuration");
+        Config::from_file("examples/example_config.yaml").expect("Failed to load configuration");
 
     SpannIndexBuilder::<f32>::new(config)
         .load::<D>()
