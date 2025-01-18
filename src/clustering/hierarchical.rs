@@ -389,3 +389,122 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+    use ndarray::array;
+    use crate::clustering::{ClusteringParams, HierarchicalClustering, InitializationMethod};
+    use crate::distances::SquaredEuclideanDistance;
+
+    fn create_test_data() -> ndarray::Array2<f64> {
+        array![[1.0, 2.0], [1.5, 2.5], [8.0, 8.0], [8.5, 8.5], [4.0, 4.0], [4.5, 4.5]]
+    }
+
+    #[test]
+    fn test_initialize_clusters_randomly() {
+        let data = create_test_data();
+        let params = ClusteringParams {
+            distance_metric: Arc::new(SquaredEuclideanDistance),
+            initialization_method: InitializationMethod::Random,
+            desired_cluster_size: Some(3),
+            initial_k: 2,
+            rng_seed: Some(42),
+        };
+        let mut clustering = HierarchicalClustering::<2, f64>::new(params, data.view());
+        clustering.initialize_clusters(2);
+
+        assert_eq!(clustering.clusters.len(), 2);
+        for cluster in &clustering.clusters {
+            assert!(cluster.centroid_idx.is_some());
+        }
+
+    }
+
+    #[test]
+    fn test_initialize_clusters_kmeans_plus_plus() {
+        let data = create_test_data();
+        let params = ClusteringParams {
+            distance_metric: Arc::new(SquaredEuclideanDistance),
+            initialization_method: InitializationMethod::KMeansPlusPlus,
+            desired_cluster_size: Some(3),
+            initial_k: 2,
+            rng_seed: Some(42),
+        };
+        let mut clustering = HierarchicalClustering::<2, f64>::new(params, data.view());
+        clustering.initialize_clusters(2);
+
+        assert_eq!(clustering.clusters.len(), 2);
+        for cluster in &clustering.clusters {
+            assert!(cluster.centroid_idx.is_some());
+        }
+    }
+
+    #[test]
+    fn test_subdivide_clusters() {
+        let data = create_test_data();
+        let params = ClusteringParams {
+            distance_metric: Arc::new(SquaredEuclideanDistance),
+            initialization_method: InitializationMethod::Random,
+            desired_cluster_size: Some(2),
+            initial_k: 1,
+            rng_seed: Some(42),
+        };
+        let mut clustering = HierarchicalClustering::<2, f64>::new(params, data.view());
+        clustering.initialize_clusters(1);
+        clustering.assign_points();
+        clustering.update_centroids();
+        clustering.subdivide_clusters();
+
+        assert!(clustering.clusters.len() > 1);
+        for cluster in &clustering.clusters {
+            assert!(cluster.points.len() <= 2);
+        }
+    }
+
+    #[test]
+    fn test_assign_points() {
+        let data = create_test_data();
+        let params = ClusteringParams {
+            distance_metric: Arc::new(SquaredEuclideanDistance),
+            initialization_method: InitializationMethod::Random,
+            desired_cluster_size: Some(3),
+            initial_k: 2,
+            rng_seed: Some(42),
+        };
+        let mut clustering = HierarchicalClustering::<2, f64>::new(params, data.view());
+        clustering.initialize_clusters(2);
+        clustering.assign_points();
+        assert_eq!(clustering.clusters.iter().map(|c| c.points.len()).sum::<usize>(), data.nrows());
+        for (i, cluster) in clustering.clusters.iter().enumerate() {
+            assert!(
+                !cluster.points.is_empty(),
+                "Cluster {} is unexpectedly empty after point assignment.",
+                i
+            );
+        }
+    }
+
+    #[test]
+    fn test_fit() {
+        let data = create_test_data();
+
+        let params = ClusteringParams {
+            distance_metric: Arc::new(SquaredEuclideanDistance),
+            initialization_method: InitializationMethod::KMeansPlusPlus,
+            desired_cluster_size: Some(2),
+            initial_k: 3,
+            rng_seed: Some(42),
+        };
+
+        let mut clustering = HierarchicalClustering::<2, f64>::new(params, data.view());
+        clustering.fit().expect("Clustering failed");
+
+        assert_eq!(clustering.clusters.len(), 3);
+        for cluster in &clustering.clusters {
+            assert!(cluster.points.len() <= 2);
+        }
+    }
+
+}
+

@@ -18,6 +18,8 @@ where
 mod tests {
     use num_traits::ToPrimitive;
     use ndarray::array;
+    use crate::clustering::utils::compute_mean;
+
     #[test]
     fn test_compute_mean() {
         let data = array![[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]];
