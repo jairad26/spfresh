@@ -1,25 +1,43 @@
-use crate::clustering::{Cluster, ClusteringParams, InitializationMethod};
 use crate::core::float::AdriannFloat;
 use log::{debug, error};
-use ndarray::{Array1, ArrayView2, Axis};
+use ndarray::ArrayView2;
 use rand::rngs::SmallRng;
 use rand::seq::{IteratorRandom, SliceRandom};
 use rand::SeedableRng;
 use rayon::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
-use num_traits::FromPrimitive;
+use crate::clustering::utils::compute_mean;
+use crate::distances::DistanceMetric;
 
-fn compute_mean<F>(data: &ArrayView2<F>, indices: &[usize]) -> Array1<F>
-where
-    F: AdriannFloat + std::ops::Add<Output = F>,
-    F: FromPrimitive
-{
-    if indices.is_empty() {
-        return Array1::<F>::zeros(data.ncols());
+pub enum InitializationMethod {
+    Random,
+    KMeansPlusPlus,
+}
+
+pub struct ClusteringParams<F: AdriannFloat> {
+    pub distance_metric: Arc<dyn DistanceMetric<F>>,
+    pub initialization_method: InitializationMethod,
+    pub desired_cluster_size: Option<usize>,
+    pub initial_k: usize,
+    pub rng_seed: Option<u64>,
+}
+
+pub struct Cluster {
+    pub centroid_idx: Option<usize>, // Store index of centroid in this cluster. SPANN uses real vectors as centroids.
+    pub points: Vec<usize>,          // Store indices of points in this cluster
+    pub depth: usize,                // Track hierarchy depth
+}
+
+impl Cluster {
+    // Create a new instance of Cluster
+    pub fn new(centroid_idx: usize, points: Vec<usize>, depth: usize) -> Self {
+        Self {
+            centroid_idx: Some(centroid_idx),
+            points,
+            depth,
+        }
     }
-    let selected_data = data.select(Axis(0), indices);
-    selected_data.mean_axis(Axis(0)).unwrap()
 }
 
 pub struct HierarchicalClustering<'a, const N: usize, F: AdriannFloat> {

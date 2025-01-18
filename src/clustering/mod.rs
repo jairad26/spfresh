@@ -1,5 +1,4 @@
-pub mod clustering;
 pub mod hierarchical;
+mod utils;
 
-pub use clustering::{Cluster, ClusteringParams, InitializationMethod};
-pub use hierarchical::HierarchicalClustering;
+pub use hierarchical::{Cluster, ClusteringParams, InitializationMethod, HierarchicalClustering};
