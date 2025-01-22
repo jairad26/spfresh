@@ -5,7 +5,6 @@ use adriann::spann::spann_builder::SpannIndexBuilder;
 fn main() {
     let config: Config =
         Config::from_file("examples/example_config.yaml").expect("Failed to load configuration");
-    config.setup_logging();
 
     let spann_index = SpannIndexBuilder::<f32>::new(config)
         .load::<2>()

@@ -5,7 +5,6 @@ use adriann::spann::spann_builder::SpannIndexBuilder;
 fn main() {
     let config: Config =
         Config::from_file("examples/example_config.yaml").expect("Failed to load configuration");
-    config.setup_logging();
 
     let data = Array2::from_shape_vec(
         (6, 2),
@@ -17,11 +16,12 @@ fn main() {
         .build::<2>()
         .expect("Failed to build SPANN index");
 
-    let k = 10;
+    let k = 1;
     let query_vector = Array1::from(vec![1.0, 2.0]);
     let result = spann_index
             .find_k_nearest_neighbor_spann(&query_vector.view(), k)
             .unwrap();
     println!("{:?}", result);
+    // [PointData { point_id: 0, vector: [1.0, 2.0] }]
 }
 

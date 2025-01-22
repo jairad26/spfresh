@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 
 use adriann::spann::config::Config;
-use log::info;
+use log::{error, info, LevelFilter};
 use ndarray::Array2;
 use std::io::Read;
 use adriann::spann::spann_builder::SpannIndexBuilder;
@@ -89,8 +89,13 @@ fn main() {
     let query = read_fvecs_as_array("data/sift_small/siftsmall_query.fvecs");
     let config: Config =
         Config::from_file("examples/example_config.yaml").expect("Failed to load configuration");
-    config.setup_logging();
 
+    // setup logging
+    if let Err(e) = env_logger::Builder::new()
+       .filter_level(LevelFilter::Debug)
+         .try_init() {
+        error!("Failed to initialize logger: {}", e);
+    }
     let spann_index = SpannIndexBuilder::<f32>::new(config)
         .with_data(data.view())
         .build::<128>()

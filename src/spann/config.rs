@@ -1,7 +1,6 @@
 use crate::clustering::{ClusteringParams, InitializationMethod};
 use crate::core::float::AdriannFloat;
 use crate::distances::{ChebyshevDistance, ManhattanDistance, SquaredEuclideanDistance};
-use log::{error, LevelFilter};
 use serde::Deserialize;
 use std::{fmt, sync::Arc};
 
@@ -13,15 +12,9 @@ pub struct ClusteringParamsConfig {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct LoggingConfig {
-    pub level: String, // Log level, e.g., "info", "debug", "warn", "error"
-}
-
-#[derive(Debug, Deserialize)]
 pub struct Config {
     pub clustering_params: ClusteringParamsConfig,
     pub data_file: Option<String>,   // Path to the dataset file
-    pub logging: LoggingConfig,      // Logging settings
     pub output_path: Option<String>, // Path to store the SPANN index
 }
 
@@ -45,8 +38,6 @@ impl fmt::Display for Config {
         } else {
             writeln!(f, "  Data File: None")?;
         }
-        writeln!(f, "  Logging:")?;
-        writeln!(f, "    Level: {}", self.logging.level)?;
         if let Some(output_path) = &self.output_path {
             writeln!(f, "  Output Path: {}", output_path)?;
         } else {
@@ -68,7 +59,7 @@ impl Config {
     pub fn validate(&self) -> Result<(), String> {
         // Validate distance metric
         match self.clustering_params.distance_metric.as_str() {
-            "Euclidean" | "Manhattan" => (),
+            "Euclidean" | "Manhattan" | "Chebyshev" => (),
             _ => {
                 return Err(format!(
                     "Unsupported distance metric: {}",
@@ -118,24 +109,6 @@ impl Config {
             desired_cluster_size: None,
             initial_k: self.clustering_params.initial_k,
             rng_seed: None,
-        }
-    }
-
-    /// Sets up logging based on the logging level in the configuration.
-    pub fn setup_logging(&self) {
-        let level_filter = match self.logging.level.to_lowercase().as_str() {
-            "debug" => LevelFilter::Debug,
-            "info" => LevelFilter::Info,
-            "warn" => LevelFilter::Warn,
-            "error" => LevelFilter::Error,
-            _ => panic!("Unsupported log level: {}", self.logging.level),
-        };
-
-        if let Err(e) = env_logger::Builder::new()
-            .filter_level(level_filter)
-            .try_init()
-        {
-            error!("Failed to initialize logger: {}", e);
         }
     }
 }

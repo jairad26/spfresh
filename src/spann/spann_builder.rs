@@ -1,4 +1,4 @@
-use log::info;
+use log::debug;
 use ndarray::ArrayView2;
 use crate::clustering::HierarchicalClustering;
 use crate::core::float::AdriannFloat;
@@ -23,7 +23,7 @@ impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
     }
 
     pub fn build<const N: usize>(self) -> Result<SpannIndex<N, F>, Box<dyn std::error::Error>> {
-        info!(
+        debug!(
             "Building SPANN index with configuration: {}",
             self.config.to_string()
         );
