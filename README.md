@@ -7,7 +7,8 @@
 - **High Recall, Low Latency**: Leverages hierarchical balanced clustering strategies to achieve lightning-fast lookups with exceptional accuracy. The in-memory index is based on [Kiddo](https://github.com/sdd/kiddo/tree/master), a high-performance, k-d tree library.  
 
 ## Usage Examples
-1. Building a Spann index:
+
+Building a Spann index:
 ```rust
 use ndarray::{Array1, Array2};
 use adriann::spann::config::Config;
@@ -45,11 +46,11 @@ fn main() {
         .build::<2>()
         .expect("Failed to build SPANN index");
 
-    // (Optional) The index is now in memory, and the data is stored on disk in the output_path. 
     println!("SPANN index built successfully!");
 }
 ```
-2. Querying the Spann index:
+
+Querying the Spann index:
 ```rust
 use ndarray::Array1;
 use adriann::spann::config::Config;
@@ -79,7 +80,7 @@ fn main() {
 }
 ```
 ## Configuration
-A typical config.yaml might look like this:
+A typical `config.yaml` might look like this:
 
 ```yaml
 clustering_params:
@@ -94,21 +95,21 @@ initial_k: 4
 output_path: "data"
 ```
 
-- distance_metric: Controls how vectors are compared. Choose what's best for your data type. Currently supported: Euclidean, Manhattan, Chebyshev.
-- initial_k: The number of cluster centroids to start with. Tweak this for controlling the granularity of your clusters.
-- initialization_method: How centroids are initialized (Random or KMeans++).
-- output_path: Where the index and posting lists get stored.
+- `distance_metric`: Controls how vectors are compared. Choose what's best for your data type. Currently supported: `Euclidean`, `Manhattan`, `Chebyshev`.
+- `initial_k`: The number of cluster centroids to start with. Tweak this for controlling the granularity of your clusters.
+- `initialization_method`: How centroids are initialized (`Random` or `KMeans++`).
+- `output_path`: Where the index and posting lists get stored.
 
 ### How does it work?
-**1. Index Structure**
+**- Index Structure**
 
 The dataset is divided into groups called "posting lists" based on clusters of data points. Each group has a centroid, a kind of representative summary point for that group. These centroids are stored inside an in-memory index for fast access, while the actual data points in the groups are stored on disk.
 
-**2. Search Process**
+**- Search Process**
 
 When a query (like a question or search request) comes in, SPANN looks at the centroids in memory to quickly find the groups that are most relevant to the query. It then loads only those relevant groups from the disk into memory for a more detailed search to find the best matches.
 
-**3. Optimizations**
+**- Optimizations**
 
 SPANN keeps the size of each group (posting list) manageable so it can load them quickly from disk. It also improves the groups by including additional nearby points to cover "boundary" cases where the best matches might be split across different groups. During the search, SPANN dynamically decides how many groups to check, ensuring a good balance between speed and accuracy.
 
