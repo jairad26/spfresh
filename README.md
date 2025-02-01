@@ -5,7 +5,7 @@
 
 **adriANN** is an **A**pproximate **N**earest **N**eighbors library in Rust, based on [SPANN: Highly-efficient Billion scale Approximate Nearest Neighbor Search]((https://arxiv.org/abs/2111.08566)). It aims to be:
 - **Memory-Efficient Design**: SPANN stores only the centroid points of posting lists in memory, significantly reducing memory requirements. This is important as most of the algorithms mainly focus on how to do low latency and high recall search all in memory with offline pre-built indexes. When targeting to the super large scale vector search scenarios, such as web search, the memory cost becomes extremely expensive.
-- **Optimized Disk Access**: Large posting lists are stored on disk, but the system minimizes disk accesses by balancing and expanding these lists using a hierarchical balanced clustering strategy. Moreover, those lists are stored using [rkyv](https://github.com/rkyv/rkyv)'s zero-copy serialization to provider a better performance. 
+- **Optimized Disk Access**: Large posting lists are stored on disk, but the system minimizes disk accesses by balancing and expanding these lists using a hierarchical balanced clustering strategy.  
 - **High Recall, Low Latency**: Leverages hierarchical balanced clustering strategies to achieve lightning-fast lookups with exceptional accuracy. The in-memory index is based on [Kiddo](https://github.com/sdd/kiddo/tree/master), a high-performance, k-d tree library.  
 
 ## Usage Examples
