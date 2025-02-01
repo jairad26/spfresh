@@ -1,9 +1,9 @@
 use crate::core::float::AdriannFloat;
 use log::{debug, error};
 use ndarray::ArrayView2;
-use rand::rngs::SmallRng;
 use rand::seq::{IteratorRandom, SliceRandom};
 use rand::SeedableRng;
+use rand::rngs::SmallRng;
 use rayon::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
