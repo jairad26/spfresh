@@ -8,7 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/jairad26/spfresh"
 readme = "README.md"
 
-keywords = ["nearest-neighbors", "spann", "SPANN", "search", "high-scale", SPFresh]
+keywords = ["nearest-neighbors", "spann", "SPANN", "search", "high-scale", "SPFresh"]
 categories = ["algorithms", "science", "development-tools"]
 
 [profile.dev]
