@@ -1,4 +1,4 @@
-use crate::core::float::AdriannFloat;
+use crate::core::float::SpannFloat;
 use log::{debug, error};
 use ndarray::ArrayView2;
 use rand::seq::{IndexedRandom, IteratorRandom};
@@ -15,7 +15,7 @@ pub enum InitializationMethod {
     KMeansPlusPlus,
 }
 
-pub struct ClusteringParams<F: AdriannFloat> {
+pub struct ClusteringParams<F: SpannFloat> {
     pub distance_metric: Arc<dyn DistanceMetric<F>>,
     pub initialization_method: InitializationMethod,
     pub desired_cluster_size: Option<usize>,
@@ -40,15 +40,15 @@ impl Cluster {
     }
 }
 
-pub struct HierarchicalClustering<'a, const N: usize, F: AdriannFloat> {
+pub struct HierarchicalClustering<'a, const N: usize, F: SpannFloat> {
     pub clusters: Vec<Cluster>,
     pub data: Arc<ArrayView2<'a, F>>,
     pub params: ClusteringParams<F>,
 }
 
-impl<'a, const N: usize, F: AdriannFloat> HierarchicalClustering<'a, N, F>
+impl<'a, const N: usize, F: SpannFloat> HierarchicalClustering<'a, N, F>
 where
-    F: AdriannFloat,
+    F: SpannFloat,
 {
     /// A constant factor for deciding whether a point is a "boundary" point
     /// (i.e., it's also close enough to other clusters).

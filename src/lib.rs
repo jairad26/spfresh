@@ -1,4 +1,4 @@
-/// adriANN: An Approximate Nearest Neighbors library in Rust
+/// spANN: An Approximate Nearest Neighbors library in Rust
 ///
 /// This library is based on SPANN, a highly-efficient billion-scale approximate nearest neighbor search.
 ///

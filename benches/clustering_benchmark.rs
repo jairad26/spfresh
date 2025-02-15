@@ -3,9 +3,9 @@ use ndarray::Array2;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 use rand_distr::StandardNormal;
-use adriann::spann::config::Config;
-use adriann::spann::spann_builder::SpannIndexBuilder;
-use adriann::spann::SpannIndex;
+use spann::spann::config::Config;
+use spann::spann::spann_builder::SpannIndexBuilder;
+use spann::spann::SpannIndex;
 
 /// Generate random data matrix of specified size
 fn generate_random_data(rows: usize, cols: usize, seed: u64) -> Array2<f32> {

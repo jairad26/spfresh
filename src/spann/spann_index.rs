@@ -1,7 +1,7 @@
 use std::io;
 
 use crate::clustering::Cluster;
-use crate::core::float::AdriannFloat;
+use crate::core::float::SpannFloat;
 use crate::distances::distance::DistanceMetric;
 use crate::distances::SquaredEuclideanDistance;
 use crate::spann::posting_lists::{FileBasedPostingListStore, PointData, PostingListStore};
@@ -14,13 +14,13 @@ use ndarray::{Array2, ArrayView1, ArrayView2};
 use std::fs::File;
 use std::io::BufWriter;
 
-pub struct SpannIndex<const N: usize, F: AdriannFloat> {
+pub struct SpannIndex<const N: usize, F: SpannFloat> {
     pub kdtree: Option<KdTree<F, N>>,
     pub posting_list_store: Option<FileBasedPostingListStore>,
     posting_list_dir: String,
 }
 
-impl<const N: usize, F: AdriannFloat> SpannIndex<N, F> {
+impl<const N: usize, F: SpannFloat> SpannIndex<N, F> {
     pub fn new(posting_lists_dir: &str) -> io::Result<Self> {
         Ok(Self {
             kdtree: None,

@@ -6,7 +6,7 @@ use std::ops::AddAssign;
 
 // A Float trait that captures the requirements we need for the various places
 // we need floats. These requirements are imposed by ndarray and kiddo
-pub trait AdriannFloat:
+pub trait SpannFloat:
     FloatCore
     + Debug
     + Default
@@ -21,5 +21,5 @@ pub trait AdriannFloat:
 {
 }
 
-impl AdriannFloat for f32 {}
-impl AdriannFloat for f64 {}
+impl SpannFloat for f32 {}
+impl SpannFloat for f64 {}

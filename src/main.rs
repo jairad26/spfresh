@@ -1,11 +1,11 @@
 use std::fs::File;
 use std::io::BufReader;
 
-use adriann::spann::config::Config;
+use spann::spann::config::Config;
 use log::info;
 use ndarray::Array2;
 use std::io::Read;
-use adriann::spann::spann_builder::SpannIndexBuilder;
+use spann::spann::spann_builder::SpannIndexBuilder;
 
 fn read_fvecs_as_array(file_path: &str) -> Array2<f32> {
     let file = File::open(file_path).expect("Failed to open file");

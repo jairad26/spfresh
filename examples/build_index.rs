@@ -1,6 +1,6 @@
 use ndarray::{Array1, Array2};
-use adriann::spann::config::Config;
-use adriann::spann::spann_builder::SpannIndexBuilder;
+use spann::spann::config::Config;
+use spann::spann::spann_builder::SpannIndexBuilder;
 
 fn main() {
     let config: Config =

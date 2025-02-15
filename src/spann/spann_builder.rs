@@ -1,16 +1,16 @@
 use log::debug;
 use ndarray::ArrayView2;
 use crate::clustering::HierarchicalClustering;
-use crate::core::float::AdriannFloat;
+use crate::core::float::SpannFloat;
 use crate::spann::config::Config;
 use crate::spann::SpannIndex;
 
-pub struct SpannIndexBuilder<'a, F: AdriannFloat> {
+pub struct SpannIndexBuilder<'a, F: SpannFloat> {
     config: Config,
     data: Option<ArrayView2<'a, F>>,
 }
 
-impl<'a, F: AdriannFloat> SpannIndexBuilder<'a, F> {
+impl<'a, F: SpannFloat> SpannIndexBuilder<'a, F> {
     /// Create a new builder from a config.
     pub fn new(config: Config) -> Self {
         Self { config, data: None }

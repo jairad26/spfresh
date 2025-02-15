@@ -1,5 +1,5 @@
 use crate::clustering::{ClusteringParams, InitializationMethod};
-use crate::core::float::AdriannFloat;
+use crate::core::float::SpannFloat;
 use crate::distances::{ChebyshevDistance, ManhattanDistance, SquaredEuclideanDistance};
 use serde::Deserialize;
 use std::{fmt, sync::Arc};
@@ -87,7 +87,7 @@ impl Config {
     }
 
     /// Converts `ClusteringParamsConfig` into `ClusteringParams`.
-    pub fn to_clustering_params<F: AdriannFloat>(&self) -> ClusteringParams<F> {
+    pub fn to_clustering_params<F: SpannFloat>(&self) -> ClusteringParams<F> {
         ClusteringParams {
             distance_metric: match self.clustering_params.distance_metric.as_str() {
                 "Euclidean" => Arc::new(SquaredEuclideanDistance),

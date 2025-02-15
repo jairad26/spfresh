@@ -1,10 +1,10 @@
 use ndarray::{Array1, ArrayView2, Axis};
 use num_traits::FromPrimitive;
-use crate::core::float::AdriannFloat;
+use crate::core::float::SpannFloat;
 
 pub fn compute_mean<F>(data: &ArrayView2<F>, indices: &[usize]) -> Array1<F>
 where
-    F: AdriannFloat + std::ops::Add<Output = F>,
+    F: SpannFloat + std::ops::Add<Output = F>,
     F: FromPrimitive
 {
     if indices.is_empty() {

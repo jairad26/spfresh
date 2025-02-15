@@ -1,14 +1,14 @@
 [package]
-name = "adriann"
+name = "spann"
 version = "0.0.1"
 edition = "2021"
-description = "Adriann is a Rust library implementing SPANN, a high-scale hybrid nearest-neighbor algorithm."
+description = "Spann is a Rust library implementing SPANN, a high-scale hybrid nearest-neighbor algorithm."
 license = "Apache-2.0"
 
-repository = "https://github.com/adriacabeza/adriANN"
+repository = "https://github.com/adriacabeza/spANN"
 readme = "README.md"
 
-keywords = ["nearest-neighbors", "spann", "adriANN", "search", "high-scale"]
+keywords = ["nearest-neighbors", "spann", "spANN", "search", "high-scale"]
 categories = ["algorithms", "science", "development-tools"]
 
 [profile.dev]
