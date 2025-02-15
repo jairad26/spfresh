@@ -4,7 +4,7 @@ use ndarray_stats::DeviationExt;
 use std::fmt::Debug;
 
 /// Trait defining the interface for distance metrics
-pub trait DistanceMetric<F: SpannFloat>: Send + Sync {
+pub trait DistanceMetric<F: SpannFloat>: std::fmt::Debug + Send + Sync {
     /// Computes the distance between two points. Panics if the points have different dimensions.
     fn compute(&self, point1: &ArrayView1<F>, point2: &ArrayView1<F>) -> F;
 }

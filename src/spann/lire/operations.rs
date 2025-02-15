@@ -5,6 +5,7 @@ use ndarray::{Array1, ArrayView1};
 use std::collections::HashSet;
 
 /// Represents a partition split operation
+#[derive(Debug)]
 pub struct Split<F: SpannFloat> {
     pub posting_id: usize,
     pub vectors: Vec<(usize, Vec<F>)>,  // (vector_id, vector_data)
@@ -120,6 +121,7 @@ impl<F: SpannFloat> PartitionOperation<F> for Split<F> {
 }
 
 /// Represents a partition merge operation
+#[derive(Debug)]
 pub struct Merge<F: SpannFloat> {
     pub posting_ids: (usize, usize),
     pub vectors1: Vec<(usize, Vec<F>)>,
@@ -217,6 +219,7 @@ impl<F: SpannFloat> PartitionOperation<F> for Merge<F> {
 }
 
 /// Represents a vector reassignment operation
+#[derive(Debug)]
 pub struct Reassign<F: SpannFloat> {
     pub vector_id: usize,
     pub vector: Vec<F>,
