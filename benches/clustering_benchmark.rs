@@ -1,8 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use ndarray::Array2;
-use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 use rand_distr::StandardNormal;
 use adriann::spann::config::Config;
 use adriann::spann::spann_builder::SpannIndexBuilder;
@@ -11,8 +10,8 @@ use adriann::spann::SpannIndex;
 /// Generate random data matrix of specified size
 fn generate_random_data(rows: usize, cols: usize, seed: u64) -> Array2<f32> {
     let mut rng = SmallRng::seed_from_u64(seed);
-    let normal = StandardNormal;
-    Array2::from_shape_fn((rows, cols), |_| normal.sample(&mut rng))
+    let distr = StandardNormal;
+    Array2::from_shape_fn((rows, cols), |_| rng.sample(distr))
 }
 
 /// Build SPANN index for given data

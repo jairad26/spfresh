@@ -1,8 +1,8 @@
 use crate::core::float::AdriannFloat;
 use log::{debug, error};
 use ndarray::ArrayView2;
-use rand::seq::{IteratorRandom, SliceRandom};
-use rand::SeedableRng;
+use rand::seq::{IndexedRandom, IteratorRandom};
+use rand::{rng, SeedableRng};
 use rand::rngs::SmallRng;
 use rayon::prelude::*;
 use std::error::Error;
@@ -51,7 +51,7 @@ where
     F: AdriannFloat,
 {
     /// A constant factor for deciding whether a point is a "boundary" point
-    /// (i.e., it’s also close enough to other clusters).
+    /// (i.e., it's also close enough to other clusters).
     const BOUNDARY_THRESHOLD: f64 = 1.1;
 
     pub fn new(params: ClusteringParams<F>, data: ArrayView2<'a, F>) -> Self {
@@ -138,7 +138,7 @@ where
     fn update_centroids(&mut self) {
         let distance_metric = &self.params.distance_metric;
 
-        // We’ll collect new centroids in a separate vector
+        // We'll collect new centroids in a separate vector
         let new_centroids: Vec<Option<usize>> = self
             .clusters
             .par_iter()
@@ -184,7 +184,7 @@ where
     fn get_rng(&self) -> SmallRng {
         match self.params.rng_seed {
             Some(seed) => SmallRng::seed_from_u64(seed),
-            None => SmallRng::from_entropy(),
+            None => SmallRng::from_rng(&mut rng())
         }
     }
 
@@ -283,7 +283,7 @@ where
             let indices: Vec<_> = (0..n_points).collect();
             // Weighted selection
             let chosen_idx = indices
-                .choose_weighted(&mut rng, |&i| weights[i].to_f64().unwrap())
+                .choose_weighted(&mut rng, |i| weights[*i].to_f64().unwrap())
                 .unwrap_or_else(|e| {
                     error!("Weighted selection failed: {:?}", e);
                     indices.choose(&mut rng).unwrap()
