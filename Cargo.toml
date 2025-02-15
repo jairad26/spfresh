@@ -2,13 +2,13 @@
 name = "spann"
 version = "0.0.1"
 edition = "2021"
-description = "Spann is a Rust library implementing SPANN, a high-scale hybrid nearest-neighbor algorithm."
+description = "SPFresh is a Rust library implementing SPFresh, a high-scale hybrid nearest-neighbor algorithm."
 license = "Apache-2.0"
 
-repository = "https://github.com/adriacabeza/spANN"
+repository = "https://github.com/jairad26/spfresh"
 readme = "README.md"
 
-keywords = ["nearest-neighbors", "spann", "spANN", "search", "high-scale"]
+keywords = ["nearest-neighbors", "spann", "SPANN", "search", "high-scale", SPFresh]
 categories = ["algorithms", "science", "development-tools"]
 
 [profile.dev]

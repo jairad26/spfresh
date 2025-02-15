@@ -1,9 +1,8 @@
-<p align="center"><img src="./spANN.png" width="440"/></p>
-<h1 align="center"> spANN </h1>
+<h1 align="center"> SPFresh </h1>
 
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](README.md)
 
-**spANN** is an **A**pproximate **N**earest **N**eighbors library in Rust, based on [SPANN: Highly-efficient Billion scale Approximate Nearest Neighbor Search]((https://arxiv.org/abs/2111.08566)). It aims to be:
+**SPFresh** is an **A**pproximate **N**earest **N**eighbors library in Rust, based on [SPANN: Highly-efficient Billion scale Approximate Nearest Neighbor Search]((https://arxiv.org/abs/2111.08566)). It aims to be:
 - **Memory-Efficient Design**: SPANN stores only the centroid points of posting lists in memory, significantly reducing memory requirements. This is important as most of the algorithms mainly focus on how to do low latency and high recall search all in memory with offline pre-built indexes. When targeting to the super large scale vector search scenarios, such as web search, the memory cost becomes extremely expensive.
 - **Optimized Disk Access**: Large posting lists are stored on disk, but the system minimizes disk accesses by balancing and expanding these lists using a hierarchical balanced clustering strategy.  
 - **High Recall, Low Latency**: Leverages hierarchical balanced clustering strategies to achieve lightning-fast lookups with exceptional accuracy. The in-memory index is based on [Kiddo](https://github.com/sdd/kiddo/tree/master), a high-performance, k-d tree library.  
